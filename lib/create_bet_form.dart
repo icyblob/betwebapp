@@ -4,14 +4,13 @@ import 'dart:convert';
 import 'package:intl/intl.dart';
 import 'decimal_text_input_formatter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:crypto/crypto.dart';
 import 'package:encrypt/encrypt.dart' as encrypt;
 
 
 class CreateBetForm extends StatefulWidget {
-  final String creatorId;
+  final String userId;
 
-  CreateBetForm({required this.creatorId});
+  CreateBetForm({required this.userId});
 
   @override
   _CreateBetFormState createState() => _CreateBetFormState();
@@ -91,7 +90,7 @@ class _CreateBetFormState extends State<CreateBetForm> {
     // Prepare bet data
     final data = {
       'no_options': _numberOfOptions,
-      'creator': widget.creatorId,
+      'creator': widget.userId,
       'bet_desc': _betDescriptionController.text,
       'no_ops': _numberOfOptions,
       'option_desc': _optionControllers.map((controller) => controller.text).toList(),
@@ -150,10 +149,10 @@ class _CreateBetFormState extends State<CreateBetForm> {
       builder: (BuildContext context) {
         final _passwordController = TextEditingController();
         return AlertDialog(
-          title: Text('Enter Password'),
+          title: const Text('Enter Password'),
           content: TextField(
             controller: _passwordController,
-            decoration: InputDecoration(labelText: 'Password'),
+            decoration: const InputDecoration(labelText: 'Password'),
             obscureText: true,
           ),
           actions: <Widget>[
@@ -162,7 +161,7 @@ class _CreateBetFormState extends State<CreateBetForm> {
                 password = _passwordController.text;
                 Navigator.of(context).pop();
               },
-              child: Text('OK'),
+              child: const Text('OK'),
             ),
           ],
         );
@@ -205,14 +204,14 @@ class _CreateBetFormState extends State<CreateBetForm> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('Error'),
+          title: const Text('Error'),
           content: Text(message),
           actions: <Widget>[
             TextButton(
               onPressed: () {
                 Navigator.of(context).pop();
               },
-              child: Text('OK'),
+              child: const Text('OK'),
             ),
           ],
         );
@@ -394,7 +393,7 @@ class _CreateBetFormState extends State<CreateBetForm> {
                   return null;
                 },
               ),
-              SizedBox(height: 16.0),
+              const SizedBox(height: 16.0),
               TextFormField(
                 controller: _maxBetSlotsPerOptionController,
                 decoration: const InputDecoration(

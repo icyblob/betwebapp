@@ -16,6 +16,7 @@ class BetCard extends StatelessWidget {
   final int no_ops;
   final List<String> oracle_id;
   final List<String> oracle_fee;
+  final String userId;
   // final bool status;
 
   BetCard({
@@ -33,6 +34,7 @@ class BetCard extends StatelessWidget {
     required this.no_ops,
     required this.oracle_id,
     required this.oracle_fee,
+    required this.userId
     // required this.status
   });
 
@@ -62,6 +64,7 @@ class BetCard extends StatelessWidget {
                 no_ops: no_ops,
                 oracle_id: oracle_id,
                 oracle_fee: oracle_fee,
+                userId: userId,
                 // status: status,
               ),
             );
@@ -94,8 +97,7 @@ class BetCard extends StatelessWidget {
                           ),
                         ),
                         onPressed: () {},
-                        child: Text(option, style: TextStyle(fontSize: textSize/1.5, color: Colors.white),
-                      ),
+                        child: Text(option, style: TextStyle(fontSize: textSize/1.5, color: Colors.white)),
                       ),
                     ),
                 ],

@@ -150,9 +150,9 @@ class _BetHomePageState extends State<BetHomePage>
             child: TabBarView(
               controller: _tabController,
               children: [
-                BetList(bets: ongoingBets, isSmallScreen: isSmallScreen),
+                BetList(bets: ongoingBets, isSmallScreen: isSmallScreen, userId: widget.hashedSeed,),
                 BetList(bets: pastBets, isSmallScreen: isSmallScreen),
-                CreateBetForm(creatorId: widget.hashedSeed),
+                CreateBetForm(userId: widget.hashedSeed),
               ],
             ),
           ),
@@ -165,8 +165,9 @@ class _BetHomePageState extends State<BetHomePage>
 class BetList extends StatelessWidget {
   final List<dynamic> bets;
   final bool isSmallScreen;
+  final String userId;
 
-  BetList({super.key, required this.bets, required this.isSmallScreen});
+  BetList({super.key, required this.bets, required this.isSmallScreen, this.userId=''});
 
   @override
   Widget build(BuildContext context) {
@@ -198,6 +199,7 @@ class BetList extends StatelessWidget {
             no_ops: bet['no_ops'],
             oracle_id: bet['oracle_id'].split(','),
             oracle_fee: bet['oracle_fee'].split(','),
+            userId: userId,
           );
         },
       ),

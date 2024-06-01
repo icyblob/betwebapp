@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
+import 'join_bet_dialog.dart';
 
-class BetDetailDialog extends StatelessWidget {
+class BetDetailDialog extends StatefulWidget {
   final int bet_id;
   final int no_options;
   final String creator;
@@ -15,6 +16,7 @@ class BetDetailDialog extends StatelessWidget {
   final int no_ops;
   final List<String> oracle_id;
   final List<String> oracle_fee;
+  final String userId;
   // final bool status;
 
   BetDetailDialog({
@@ -32,8 +34,16 @@ class BetDetailDialog extends StatelessWidget {
     required this.no_ops,
     required this.oracle_id,
     required this.oracle_fee,
+    required this.userId,
     // required this.status
   });
+
+  @override
+  _BetDetailDialogState createState() => _BetDetailDialogState();
+}
+
+class _BetDetailDialogState extends State<BetDetailDialog> {
+  int? _selectedOption;
 
   @override
   Widget build(BuildContext context) {
@@ -47,43 +57,43 @@ class BetDetailDialog extends StatelessWidget {
         child: ListBody(
           children: <Widget>[
             Text(
-              'Bet ID: $bet_id',
+              'Bet ID: ${widget.bet_id}',
               style: const TextStyle(fontSize: 20.0),
             ),
             Text(
-              'Creator: $creator',
+              'Creator: ${widget.creator}',
               style: const TextStyle(fontSize: 20.0),
             ),
             Text(
-              'Max slot per option: $max_slot_per_option',
+              'Max slot per option: ${widget.max_slot_per_option}',
               style: const TextStyle(fontSize: 20.0),
             ),
             Text(
-              'Amount of qus per bet slot: $amount_per_bet_slot',
+              'Amount of qus per bet slot: ${widget.amount_per_bet_slot}',
               style: const TextStyle(fontSize: 20.0),
             ),
             Text(
-              'Open date: $open_date',
+              'Open date: ${widget.open_date}',
               style: const TextStyle(fontSize: 20.0),
             ),
             Text(
-              'Close date: $close_date',
+              'Close date: ${widget.close_date}',
               style: const TextStyle(fontSize: 20.0),
             ),
             Text(
-              'End date: $end_date',
+              'End date: ${widget.end_date}',
               style: const TextStyle(fontSize: 20.0),
             ),
             Text(
-              'Oracle Provider IDs: $oracle_id',
+              'Oracle Provider IDs: ${widget.oracle_id}',
               style: const TextStyle(fontSize: 20.0),
             ),
             Text(
-              'Oracle Provider fees: $oracle_fee',
+              'Oracle Provider fees: ${widget.oracle_fee}',
               style: const TextStyle(fontSize: 20.0),
             ),
             Text(
-              bet_desc,
+              widget.bet_desc,
               style: const TextStyle(fontSize: 20.0),
             ),
             const SizedBox(height: 10.0),
@@ -91,19 +101,23 @@ class BetDetailDialog extends StatelessWidget {
               'Options:',
               style: TextStyle(fontSize: 20.0),
             ),
-            for (var option in option_desc)
+            for (var i = 0; i < widget.option_desc.length; i++)
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 5.0),
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.blue[900], // Dark blue color for button background
+                    backgroundColor: _selectedOption == i ? Colors.green : Colors.blue[900],
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10.0),
                     ),
                   ),
-                  onPressed: () {},
+                  onPressed: () {
+                    setState(() {
+                      _selectedOption = i;
+                    });
+                  },
                   child: Text(
-                    option,
+                    widget.option_desc[i],
                     style: const TextStyle(fontSize: 18.0, color: Colors.white),
                   ),
                 ),
@@ -117,6 +131,26 @@ class BetDetailDialog extends StatelessWidget {
           onPressed: () {
             Navigator.of(context).pop();
           },
+        ),
+        TextButton(
+          onPressed: _selectedOption == null
+              ? null
+              : () {
+            showDialog(
+              context: context,
+              builder: (context) => JoinBetDialog(
+                bet_id: widget.bet_id,
+                option_id: _selectedOption!,
+                max_slot_per_option: widget.max_slot_per_option,
+                creatorId: widget.creator,
+                userId: widget.userId,
+              ),
+            );
+          },
+          child: Text(
+            'Join Bet',
+            style: TextStyle(color: _selectedOption == null ? Colors.grey : Colors.blue),
+          ),
         ),
       ],
     );
