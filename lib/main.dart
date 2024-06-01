@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
+
 import 'login_page.dart';
 
 void main() {
-  runApp(BetApp());
+  runApp(QuotteryApp());
 }
 
-class BetApp extends StatelessWidget {
+class QuotteryApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(

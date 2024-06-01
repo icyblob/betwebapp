@@ -1,11 +1,12 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'dart:convert';
+import 'package:shared_preferences/shared_preferences.dart';
+
 import 'bet_card.dart';
 import 'constants.dart';
 import 'login_page.dart';
 import 'create_bet_form.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 class BetHomePage extends StatefulWidget {
   final String hashedSeed;
@@ -39,7 +40,7 @@ class _BetHomePageState extends State<BetHomePage>
   Future<void> _fetchBets() async {
     try {
       final response = await http
-          .get(Uri.parse('http://192.168.1.211:5000/get_active_bets'));
+          .get(Uri.parse('$DATABASE_SERVER/get_active_bets'));
 
       if (response.statusCode == 200) {
         final List<dynamic> data = json.decode(response.body);
@@ -71,9 +72,8 @@ class _BetHomePageState extends State<BetHomePage>
   @override
   Widget build(BuildContext context) {
     double screenWidth = MediaQuery.of(context).size.width;
-    double screenHeight = MediaQuery.of(context).size.height;
     double tabBarTextSize = TAB_BAR_TEXT_SIZE;
-    bool isSmallScreen = screenWidth < smallScreenThreshold;
+    bool isSmallScreen = screenWidth < SMALL_SCREEN_THRESHOLD;
 
     return Scaffold(
       key: _scaffoldKey,
@@ -176,7 +176,7 @@ class BetList extends StatelessWidget {
       child: GridView.builder(
         gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
           maxCrossAxisExtent:
-              isSmallScreen ? double.infinity : maxGridColumnWidth,
+              isSmallScreen ? double.infinity : MAX_GRID_COLUMN_WIDTH,
           childAspectRatio: 300.0 / 200.0,
           crossAxisSpacing: 10.0,
           mainAxisSpacing: 10.0,

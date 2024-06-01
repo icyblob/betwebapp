@@ -1,3 +1,4 @@
+import 'package:betweb/constants.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:encrypt/encrypt.dart' as encrypt;
@@ -60,7 +61,7 @@ class _JoinBetDialogState extends State<JoinBetDialog> {
     };
 
     final response = await http.post(
-      Uri.parse('http://192.168.1.211:5000/join_bet'),
+      Uri.parse('$DATABASE_SERVER/join_bet'),
       headers: {'Content-Type': 'application/json'},
       body: json.encode(data),
     );

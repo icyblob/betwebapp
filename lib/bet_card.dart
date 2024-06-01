@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import 'bet_detail_dialog.dart';
 
 class BetCard extends StatelessWidget {
@@ -19,7 +20,7 @@ class BetCard extends StatelessWidget {
   final String userId;
   // final bool status;
 
-  BetCard({
+  BetCard({super.key,
     required this.bet_id,
     required this.no_options,
     required this.creator,
@@ -76,7 +77,7 @@ class BetCard extends StatelessWidget {
             color: Colors.white,
             elevation: 5.0,
             child: Padding(
-              padding: EdgeInsets.all(10.0),
+              padding: const EdgeInsets.all(10.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [

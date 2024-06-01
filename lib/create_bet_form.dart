@@ -1,10 +1,12 @@
+import 'package:intl/intl.dart';
+import 'package:betweb/constants.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'dart:convert';
-import 'package:intl/intl.dart';
-import 'decimal_text_input_formatter.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:encrypt/encrypt.dart' as encrypt;
+import 'package:shared_preferences/shared_preferences.dart';
+
+import 'dart:convert';
+import 'decimal_text_input_formatter.dart';
 
 
 class CreateBetForm extends StatefulWidget {
@@ -107,7 +109,7 @@ class _CreateBetFormState extends State<CreateBetForm> {
     };
 
     final response = await http.post(
-      Uri.parse('http://192.168.1.211:5000/add_bet'),
+      Uri.parse('$DATABASE_SERVER/add_bet'),
       headers: {'Content-Type': 'application/json'},
       body: json.encode(data),
     );
@@ -429,9 +431,15 @@ class _CreateBetFormState extends State<CreateBetForm> {
     _betDescriptionController.dispose();
     _numQusPerBetSlotController.dispose();
     _maxBetSlotsPerOptionController.dispose();
-    _optionControllers.forEach((controller) => controller.dispose());
-    _oracleIdControllers.forEach((controller) => controller.dispose());
-    _oracleFeeControllers.forEach((controller) => controller.dispose());
+    for (var controller in _optionControllers) {
+      controller.dispose();
+    }
+    for (var controller in _oracleIdControllers) {
+      controller.dispose();
+    }
+    for (var controller in _oracleFeeControllers) {
+      controller.dispose();
+    }
     super.dispose();
   }
 }

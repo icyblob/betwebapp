@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import 'join_bet_dialog.dart';
 
 class BetDetailDialog extends StatefulWidget {
@@ -19,7 +20,7 @@ class BetDetailDialog extends StatefulWidget {
   final String userId;
   // final bool status;
 
-  BetDetailDialog({
+  BetDetailDialog({super.key,
     required this.bet_id,
     required this.no_options,
     required this.creator,
