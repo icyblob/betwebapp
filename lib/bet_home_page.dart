@@ -146,11 +146,6 @@ class _BetHomePageState extends State<BetHomePage>
           : null,
       body: Column(
         children: [
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Text('User ID: ${widget.hashedSeed}',
-                style: const TextStyle(fontSize: 16)),
-          ),
           Expanded(
             child: TabBarView(
               controller: _tabController,

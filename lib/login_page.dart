@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
-import 'package:crypto/crypto.dart';
 import 'bet_home_page.dart';
+
+import 'package:encrypt/encrypt.dart' as encrypt;
 
 class LoginPage extends StatefulWidget {
   @override
@@ -29,14 +30,21 @@ class _LoginPageState extends State<LoginPage> {
     }
   }
 
+  // Generate a key from a password
+  encrypt.Key deriveKeyFromPassword(String password) {
+    final keyBytes = utf8.encode(password.padRight(32, '*').substring(0, 32));
+    return encrypt.Key(keyBytes);
+  }
+
   Future<void> _saveSeed(String seed, String password) async {
     final prefs = await SharedPreferences.getInstance();
-    var key = utf8.encode(password);
-    var bytes = utf8.encode(seed);
 
-    var hmacSha256 = Hmac(sha256, key); // HMAC-SHA256
-    var digest = hmacSha256.convert(bytes);
-    final hashedSeed = digest.toString();
+    final key = deriveKeyFromPassword(password);
+    final iv = encrypt.IV.fromLength(16); // Initialization vector
+    final encrypter = encrypt.Encrypter(encrypt.AES(key));
+
+    final encrypted = encrypter.encrypt(seed, iv: iv);
+    final hashedSeed = base64.encode(iv.bytes + encrypted.bytes);
 
     await prefs.setString('ss_ecrpt', hashedSeed);
     await prefs.setString('password', password);

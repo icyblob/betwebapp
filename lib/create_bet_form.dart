@@ -3,6 +3,10 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:intl/intl.dart';
 import 'decimal_text_input_formatter.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:crypto/crypto.dart';
+import 'package:encrypt/encrypt.dart' as encrypt;
+
 
 class CreateBetForm extends StatefulWidget {
   final String creatorId;
@@ -71,6 +75,20 @@ class _CreateBetFormState extends State<CreateBetForm> {
   }
 
   void _createBet() async {
+    // Prompt for password
+    final password = await _promptForPassword();
+    if (password == null) {
+      return;
+    }
+
+    // Decrypt the seed
+    final decryptedSeed = await _decryptSeed(password);
+    if (decryptedSeed == null) {
+      _showErrorDialog('Incorrect password');
+      return;
+    }
+
+    // Prepare bet data
     final data = {
       'no_options': _numberOfOptions,
       'creator': widget.creatorId,
@@ -86,6 +104,7 @@ class _CreateBetFormState extends State<CreateBetForm> {
       'oracle_id': _oracleIdControllers.map((controller) => controller.text).toList(),
       'oracle_fee': _oracleFeeControllers.map((controller) => controller.text).toList(),
       'status': 1,
+      'seed': decryptedSeed,
     };
 
     final response = await http.post(
@@ -116,7 +135,84 @@ class _CreateBetFormState extends State<CreateBetForm> {
                   setState(() {});
                 }
               },
-              child: const Text('OK'),
+              child: Text('OK'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Future<String?> _promptForPassword() async {
+    String? password;
+    await showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        final _passwordController = TextEditingController();
+        return AlertDialog(
+          title: Text('Enter Password'),
+          content: TextField(
+            controller: _passwordController,
+            decoration: InputDecoration(labelText: 'Password'),
+            obscureText: true,
+          ),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () {
+                password = _passwordController.text;
+                Navigator.of(context).pop();
+              },
+              child: Text('OK'),
+            ),
+          ],
+        );
+      },
+    );
+    return password;
+  }
+
+  // Generate a key from a password
+  encrypt.Key deriveKeyFromPassword(String password) {
+    final keyBytes = utf8.encode(password.padRight(32, '*').substring(0, 32));
+    return encrypt.Key(keyBytes);
+  }
+
+  Future<String?> _decryptSeed(String password) async {
+    final prefs = await SharedPreferences.getInstance();
+    if (!prefs.containsKey('password')) {
+      return null;
+    }
+
+      final encryptedSeed = prefs.getString('ss_ecrpt');
+      if (encryptedSeed == null) {
+        return null;
+      }
+
+    final key = deriveKeyFromPassword(password);
+    final encryptedBytes = base64.decode(encryptedSeed);
+
+    final iv = encrypt.IV(encryptedBytes.sublist(0, 16));
+    final encrypted = encrypt.Encrypted(encryptedBytes.sublist(16));
+    final encrypter = encrypt.Encrypter(encrypt.AES(key));
+
+    final seed = encrypter.decrypt(encrypted, iv: iv);
+    return seed;
+
+  }
+
+  void _showErrorDialog(String message) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Error'),
+          content: Text(message),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: Text('OK'),
             ),
           ],
         );
