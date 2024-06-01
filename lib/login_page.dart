@@ -36,9 +36,16 @@ class _LoginPageState extends State<LoginPage> {
 
     var hmacSha256 = Hmac(sha256, key); // HMAC-SHA256
     var digest = hmacSha256.convert(bytes);
+    final hashedSeed = digest.toString();
 
-    await prefs.setString('ss_ecrpt', digest.toString());
+    await prefs.setString('ss_ecrpt', hashedSeed);
     await prefs.setString('password', password);
+
+    // Navigate to the home page with the hashed seed
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (context) => BetHomePage(hashedSeed: hashedSeed)),
+    );
   }
 
   Future<bool> _checkPassword(String password) async {

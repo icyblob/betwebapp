@@ -1,4 +1,4 @@
-const double maxGridColumnWidth = 400.0;
+const double maxGridColumnWidth = 500.0;
 const double maxGridRowHeight = 300.0;
 const double smallScreenThreshold = 600.0;
-const double tabBarTextSize = 24;
+const double TAB_BAR_TEXT_SIZE = 24;

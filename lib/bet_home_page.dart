@@ -4,17 +4,24 @@ import 'dart:convert';
 import 'bet_card.dart';
 import 'constants.dart';
 import 'login_page.dart';
+import 'create_bet_form.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class BetHomePage extends StatefulWidget {
+  final String hashedSeed;
+
+  BetHomePage({this.hashedSeed=''});
+
   @override
   _BetHomePageState createState() => _BetHomePageState();
 }
 
-class _BetHomePageState extends State<BetHomePage> with SingleTickerProviderStateMixin {
+class _BetHomePageState extends State<BetHomePage>
+    with SingleTickerProviderStateMixin {
   late TabController _tabController;
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   List<dynamic> ongoingBets = [];
+  List<dynamic> pastBets = [];
 
   @override
   void initState() {
@@ -30,12 +37,23 @@ class _BetHomePageState extends State<BetHomePage> with SingleTickerProviderStat
   }
 
   Future<void> _fetchBets() async {
-    final response = await http.get(Uri.parse('http://192.168.1.211:5000/get_active_bets'));
-    if (response.statusCode == 200) {
-      setState(() {
-        ongoingBets = json.decode(response.body);
-      });
-    } else {
+    try {
+      final response = await http
+          .get(Uri.parse('http://192.168.1.211:5000/get_active_bets'));
+
+      if (response.statusCode == 200) {
+        final List<dynamic> data = json.decode(response.body);
+        setState(() {
+          ongoingBets = data.where((bet) => bet['status'] == 1).toList();
+          pastBets = data.where((bet) => bet['status'] == 0).toList();
+        });
+      } else {
+        print(
+            'Failed to load bets: ${response.statusCode} ${response.reasonPhrase}');
+        throw Exception('Failed to load bets');
+      }
+    } catch (e) {
+      print('Error: $e');
       throw Exception('Failed to load bets');
     }
   }
@@ -54,79 +72,95 @@ class _BetHomePageState extends State<BetHomePage> with SingleTickerProviderStat
   Widget build(BuildContext context) {
     double screenWidth = MediaQuery.of(context).size.width;
     double screenHeight = MediaQuery.of(context).size.height;
-    double tabBarTextSize = 24;
+    double tabBarTextSize = TAB_BAR_TEXT_SIZE;
     bool isSmallScreen = screenWidth < smallScreenThreshold;
 
     return Scaffold(
       key: _scaffoldKey,
       appBar: AppBar(
-        title: isSmallScreen ? Text('Quottery App') : null,
+        title: isSmallScreen ? const Text('Quottery App') : null,
         bottom: isSmallScreen
             ? null
             : TabBar(
-          controller: _tabController,
-          tabs: const [
-            Tab(text: 'Ongoing'),
-            Tab(text: 'Past Bets'),
-            Tab(text: 'Create Bet'),
-          ],
-          labelStyle: TextStyle(fontSize: tabBarTextSize),
-        ),
+                controller: _tabController,
+                tabs: const [
+                  Tab(text: 'Ongoing'),
+                  Tab(text: 'Past Bets'),
+                  Tab(text: 'Create Bet'),
+                ],
+                labelStyle: TextStyle(fontSize: tabBarTextSize),
+              ),
         actions: [
           IconButton(
-            icon: Icon(Icons.logout),
+            icon: const Icon(Icons.refresh),
+            onPressed: _fetchBets,
+          ),
+          IconButton(
+            icon: const Icon(Icons.logout),
             onPressed: _logout,
           ),
         ],
       ),
       endDrawer: isSmallScreen
           ? Drawer(
-        child: ListView(
-          padding: EdgeInsets.zero,
-          children: [
-            DrawerHeader(
-              decoration: BoxDecoration(
-                color: Colors.blue[900],
+              child: ListView(
+                padding: EdgeInsets.zero,
+                children: [
+                  DrawerHeader(
+                    decoration: BoxDecoration(
+                      color: Colors.blue[900],
+                    ),
+                    child: const Text(
+                      'Bet App',
+                      style: TextStyle(
+                        color: Colors.white,
+                        // color: Color.fromRGBO(7, 21, 27, 1.0),
+                        fontSize: 24,
+                      ),
+                    ),
+                  ),
+                  ListTile(
+                    title: const Text('Ongoing'),
+                    onTap: () {
+                      Navigator.pop(context);
+                      _tabController.animateTo(0);
+                    },
+                  ),
+                  ListTile(
+                    title: const Text('Past Bets'),
+                    onTap: () {
+                      Navigator.pop(context);
+                      _tabController.animateTo(1);
+                    },
+                  ),
+                  ListTile(
+                    title: const Text('Create Bet'),
+                    onTap: () {
+                      Navigator.pop(context);
+                      _tabController.animateTo(2);
+                    },
+                  ),
+                ],
               ),
-              child: Text(
-                'Bet App',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 24,
-                ),
-              ),
-            ),
-            ListTile(
-              title: Text('Ongoing'),
-              onTap: () {
-                Navigator.pop(context);
-                _tabController.animateTo(0);
-              },
-            ),
-            ListTile(
-              title: Text('Past Bets'),
-              onTap: () {
-                Navigator.pop(context);
-                _tabController.animateTo(1);
-              },
-            ),
-            ListTile(
-              title: Text('Create Bet'),
-              onTap: () {
-                Navigator.pop(context);
-                _tabController.animateTo(2);
-              },
-            ),
-          ],
-        ),
-      )
+            )
           : null,
-      body: TabBarView(
-        controller: _tabController,
+      body: Column(
         children: [
-          BetList(bets: ongoingBets),
-          Center(child: Text('Past Bets')),
-          Center(child: Text('Create Bet')),
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Text('User ID: ${widget.hashedSeed}',
+                style: const TextStyle(fontSize: 16)),
+          ),
+          Expanded(
+            child: TabBarView(
+              controller: _tabController,
+              children: [
+                BetList(bets: ongoingBets, isSmallScreen: isSmallScreen),
+                BetList(bets: pastBets, isSmallScreen: isSmallScreen),
+                CreateBetForm(creatorId: widget.hashedSeed),
+              ],
+            ),
+          ),
         ],
       ),
     );
@@ -135,16 +169,18 @@ class _BetHomePageState extends State<BetHomePage> with SingleTickerProviderStat
 
 class BetList extends StatelessWidget {
   final List<dynamic> bets;
+  final bool isSmallScreen;
 
-  const BetList({super.key, required this.bets});
+  BetList({super.key, required this.bets, required this.isSmallScreen});
 
   @override
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.all(10.0),
       child: GridView.builder(
-        gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-          maxCrossAxisExtent: 300.0,
+        gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
+          maxCrossAxisExtent:
+              isSmallScreen ? double.infinity : maxGridColumnWidth,
           childAspectRatio: 300.0 / 200.0,
           crossAxisSpacing: 10.0,
           mainAxisSpacing: 10.0,
