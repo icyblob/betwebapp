@@ -2,28 +2,38 @@ import 'package:flutter/material.dart';
 import 'bet_detail_dialog.dart';
 
 class BetCard extends StatelessWidget {
-  final String question;
-  final List<String> options;
-  final String betId;
-  final int numberOfOptions;
-  final String creatorId;
-  final double maxBetAmount;
-  final String openDate;
-  final String closeDate;
-  final String endDate;
-  final List<String> oracleProviderIds;
+  final int bet_id;
+  final int no_options;
+  final String creator;
+  final String bet_desc;
+  final List<String> option_desc;
+  final int max_slot_per_option;
+  final int amount_per_bet_slot;
+  final String open_date;
+  final String close_date;
+  final String end_date;
+  final int result;
+  final int no_ops;
+  final List<String> oracle_id;
+  final List<String> oracle_fee;
+  // final bool status;
 
   BetCard({
-    required this.question,
-    required this.options,
-    required this.betId,
-    required this.numberOfOptions,
-    required this.creatorId,
-    required this.maxBetAmount,
-    required this.openDate,
-    required this.closeDate,
-    required this.endDate,
-    required this.oracleProviderIds,
+    required this.bet_id,
+    required this.no_options,
+    required this.creator,
+    required this.bet_desc,
+    required this.option_desc,
+    required this.max_slot_per_option,
+    required this.amount_per_bet_slot,
+    required this.open_date,
+    required this.close_date,
+    required this.end_date,
+    required this.result,
+    required this.no_ops,
+    required this.oracle_id,
+    required this.oracle_fee,
+    // required this.status
   });
 
   @override
@@ -38,16 +48,21 @@ class BetCard extends StatelessWidget {
             showDialog(
               context: context,
               builder: (context) => BetDetailDialog(
-                question: question,
-                options: options,
-                betId: betId,
-                numberOfOptions: numberOfOptions,
-                creatorId: creatorId,
-                maxBetAmount: maxBetAmount,
-                openDate: openDate,
-                closeDate: closeDate,
-                endDate: endDate,
-                oracleProviderIds: oracleProviderIds,
+                bet_id: bet_id,
+                no_options: no_options,
+                creator: creator,
+                bet_desc: bet_desc,
+                option_desc: option_desc,
+                max_slot_per_option: max_slot_per_option,
+                amount_per_bet_slot: amount_per_bet_slot,
+                open_date: open_date,
+                close_date: close_date,
+                end_date: end_date,
+                result: result,
+                no_ops: no_ops,
+                oracle_id: oracle_id,
+                oracle_fee: oracle_fee,
+                // status: status,
               ),
             );
           },
@@ -63,14 +78,14 @@ class BetCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   Text(
-                    question,
+                    bet_desc,
                     textAlign: TextAlign.center,
                     style: TextStyle(fontSize: textSize, fontWeight: FontWeight.bold, color: Colors.blue[900]),
                   ),
-                  SizedBox(height: 10.0),
-                  for (var option in options)
+                  const SizedBox(height: 10.0),
+                  for (var option in option_desc)
                     Padding(
-                      padding: EdgeInsets.symmetric(vertical: 5.0),
+                      padding: const EdgeInsets.symmetric(vertical: 5.0),
                       child: ElevatedButton(
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.blue[900], // Dark blue color for button background

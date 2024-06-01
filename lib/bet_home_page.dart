@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'login_page.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 import 'bet_card.dart';
 import 'constants.dart';
+import 'login_page.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class BetHomePage extends StatefulWidget {
   @override
@@ -12,17 +14,30 @@ class BetHomePage extends StatefulWidget {
 class _BetHomePageState extends State<BetHomePage> with SingleTickerProviderStateMixin {
   late TabController _tabController;
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+  List<dynamic> ongoingBets = [];
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 3, vsync: this);
+    _fetchBets();
   }
 
   @override
   void dispose() {
     _tabController.dispose();
     super.dispose();
+  }
+
+  Future<void> _fetchBets() async {
+    final response = await http.get(Uri.parse('http://192.168.1.211:5000/get_active_bets'));
+    if (response.statusCode == 200) {
+      setState(() {
+        ongoingBets = json.decode(response.body);
+      });
+    } else {
+      throw Exception('Failed to load bets');
+    }
   }
 
   Future<void> _logout() async {
@@ -39,8 +54,7 @@ class _BetHomePageState extends State<BetHomePage> with SingleTickerProviderStat
   Widget build(BuildContext context) {
     double screenWidth = MediaQuery.of(context).size.width;
     double screenHeight = MediaQuery.of(context).size.height;
-    double tabBarHeight = screenHeight * 0.10;
-    double tabBarTextSize = screenHeight * 0.08;
+    double tabBarTextSize = 24;
     bool isSmallScreen = screenWidth < smallScreenThreshold;
 
     return Scaffold(
@@ -51,7 +65,7 @@ class _BetHomePageState extends State<BetHomePage> with SingleTickerProviderStat
             ? null
             : TabBar(
           controller: _tabController,
-          tabs: [
+          tabs: const [
             Tab(text: 'Ongoing'),
             Tab(text: 'Past Bets'),
             Tab(text: 'Create Bet'),
@@ -110,106 +124,52 @@ class _BetHomePageState extends State<BetHomePage> with SingleTickerProviderStat
       body: TabBarView(
         controller: _tabController,
         children: [
-          OngoingBets(isSmallScreen: isSmallScreen),
-          PastBets(isSmallScreen: isSmallScreen),
-          CreateBet(),
+          BetList(bets: ongoingBets),
+          Center(child: Text('Past Bets')),
+          Center(child: Text('Create Bet')),
         ],
       ),
     );
   }
 }
 
-class OngoingBets extends StatelessWidget {
-  final bool isSmallScreen;
+class BetList extends StatelessWidget {
+  final List<dynamic> bets;
 
-  OngoingBets({required this.isSmallScreen});
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(10.0),
-      child: LayoutBuilder(
-        builder: (context, constraints) {
-          double gridColumnWidth = isSmallScreen ? constraints.maxWidth : maxGridColumnWidth;
-          double gridRowHeight = maxGridRowHeight;
-
-          return GridView.builder(
-            gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
-              maxCrossAxisExtent: gridColumnWidth,
-              childAspectRatio: gridColumnWidth / gridRowHeight,
-              crossAxisSpacing: 10.0,
-              mainAxisSpacing: 10.0,
-            ),
-            itemCount: 4, // Number of cards to display
-            itemBuilder: (context, index) {
-              return BetCard(
-                question: 'Sample Question $index',
-                options: ['Option 1', 'Option 2'],
-                betId: 'BET${index + 1}',
-                numberOfOptions: 2,
-                creatorId: 'Creator${index + 1}',
-                maxBetAmount: 100.0,
-                openDate: '2023-01-01',
-                closeDate: '2023-01-31',
-                endDate: '2023-02-01',
-                oracleProviderIds: ['Oracle1', 'Oracle2'],
-              );
-            },
-          );
-        },
-      ),
-    );
-  }
-}
-
-class PastBets extends StatelessWidget {
-  final bool isSmallScreen;
-
-  PastBets({required this.isSmallScreen});
+  const BetList({super.key, required this.bets});
 
   @override
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.all(10.0),
-      child: LayoutBuilder(
-        builder: (context, constraints) {
-          double gridColumnWidth = isSmallScreen ? constraints.maxWidth : maxGridColumnWidth;
-          double gridRowHeight = maxGridRowHeight;
-
-          return GridView.builder(
-            gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
-              maxCrossAxisExtent: gridColumnWidth,
-              childAspectRatio: gridColumnWidth / gridRowHeight,
-              crossAxisSpacing: 10.0,
-              mainAxisSpacing: 10.0,
-            ),
-            itemCount: 4, // Number of cards to display
-            itemBuilder: (context, index) {
-              return BetCard(
-                question: 'Sample Question $index',
-                options: ['Option 1', 'Option 2'],
-                betId: 'BET${index + 1}',
-                numberOfOptions: 2,
-                creatorId: 'Creator${index + 1}',
-                maxBetAmount: 100.0,
-                openDate: '2023-01-01',
-                closeDate: '2023-01-31',
-                endDate: '2023-02-01',
-                oracleProviderIds: ['Oracle1', 'Oracle2'],
-              );
-            },
+      child: GridView.builder(
+        gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+          maxCrossAxisExtent: 300.0,
+          childAspectRatio: 300.0 / 200.0,
+          crossAxisSpacing: 10.0,
+          mainAxisSpacing: 10.0,
+        ),
+        itemCount: bets.length,
+        itemBuilder: (context, index) {
+          final bet = bets[index];
+          return BetCard(
+            bet_id: bet['bet_id'],
+            no_options: bet['no_options'],
+            creator: bet['creator'],
+            bet_desc: bet['bet_desc'],
+            option_desc: bet['option_desc'].split(','),
+            max_slot_per_option: bet['max_slot_per_option'],
+            amount_per_bet_slot: bet['amount_per_bet_slot'],
+            open_date: bet['open_date'],
+            close_date: bet['close_date'],
+            end_date: bet['end_date'],
+            result: bet['result'] ?? -1,
+            no_ops: bet['no_ops'],
+            oracle_id: bet['oracle_id'].split(','),
+            oracle_fee: bet['oracle_fee'].split(','),
           );
         },
       ),
-    );
-  }
-}
-
-class CreateBet extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Text('Create Bet Page'),
     );
   }
 }

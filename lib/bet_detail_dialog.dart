@@ -1,35 +1,45 @@
 import 'package:flutter/material.dart';
 
 class BetDetailDialog extends StatelessWidget {
-  final String question;
-  final List<String> options;
-  final String betId;
-  final int numberOfOptions;
-  final String creatorId;
-  final double maxBetAmount;
-  final String openDate;
-  final String closeDate;
-  final String endDate;
-  final List<String> oracleProviderIds;
+  final int bet_id;
+  final int no_options;
+  final String creator;
+  final String bet_desc;
+  final List<String> option_desc;
+  final int max_slot_per_option;
+  final int amount_per_bet_slot;
+  final String open_date;
+  final String close_date;
+  final String end_date;
+  final int result;
+  final int no_ops;
+  final List<String> oracle_id;
+  final List<String> oracle_fee;
+  // final bool status;
 
   BetDetailDialog({
-    required this.question,
-    required this.options,
-    required this.betId,
-    required this.numberOfOptions,
-    required this.creatorId,
-    required this.maxBetAmount,
-    required this.openDate,
-    required this.closeDate,
-    required this.endDate,
-    required this.oracleProviderIds,
+    required this.bet_id,
+    required this.no_options,
+    required this.creator,
+    required this.bet_desc,
+    required this.option_desc,
+    required this.max_slot_per_option,
+    required this.amount_per_bet_slot,
+    required this.open_date,
+    required this.close_date,
+    required this.end_date,
+    required this.result,
+    required this.no_ops,
+    required this.oracle_id,
+    required this.oracle_fee,
+    // required this.status
   });
 
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
       backgroundColor: Colors.white,
-      title: Text(
+      title: const Text(
         'Bet Details',
         style: TextStyle(fontSize: 20.0),
       ),
@@ -37,50 +47,53 @@ class BetDetailDialog extends StatelessWidget {
         child: ListBody(
           children: <Widget>[
             Text(
-              'Question: $question',
-              style: TextStyle(fontSize: 20.0),
-            ),
-            SizedBox(height: 10),
-            Text(
-              'Bet ID: $betId',
-              style: TextStyle(fontSize: 16.0),
+              'Bet ID: $bet_id',
+              style: const TextStyle(fontSize: 20.0),
             ),
             Text(
-              'Number of Options: $numberOfOptions',
-              style: TextStyle(fontSize: 16.0),
+              'Creator: $creator',
+              style: const TextStyle(fontSize: 20.0),
             ),
             Text(
-              'Creator ID: $creatorId',
-              style: TextStyle(fontSize: 16.0),
+              'Max slot per option: $max_slot_per_option',
+              style: const TextStyle(fontSize: 20.0),
             ),
             Text(
-              'Maximum Bet Amount: $maxBetAmount',
-              style: TextStyle(fontSize: 16.0),
+              'Amount of qus per bet slot: $amount_per_bet_slot',
+              style: const TextStyle(fontSize: 20.0),
             ),
             Text(
-              'Open Date: $openDate',
-              style: TextStyle(fontSize: 16.0),
+              'Open date: $open_date',
+              style: const TextStyle(fontSize: 20.0),
             ),
             Text(
-              'Close Date: $closeDate',
-              style: TextStyle(fontSize: 16.0),
+              'Close date: $close_date',
+              style: const TextStyle(fontSize: 20.0),
             ),
             Text(
-              'End Date: $endDate',
-              style: TextStyle(fontSize: 16.0),
+              'End date: $end_date',
+              style: const TextStyle(fontSize: 20.0),
             ),
             Text(
-              'Oracle Provider IDs: ${oracleProviderIds.join(", ")}',
-              style: TextStyle(fontSize: 16.0),
+              'Oracle Provider IDs: $oracle_id',
+              style: const TextStyle(fontSize: 20.0),
             ),
-            SizedBox(height: 10.0),
             Text(
+              'Oracle Provider fees: $oracle_fee',
+              style: const TextStyle(fontSize: 20.0),
+            ),
+            Text(
+              bet_desc,
+              style: const TextStyle(fontSize: 20.0),
+            ),
+            const SizedBox(height: 10.0),
+            const Text(
               'Options:',
               style: TextStyle(fontSize: 20.0),
             ),
-            for (var option in options)
+            for (var option in option_desc)
               Padding(
-                padding: EdgeInsets.symmetric(vertical: 5.0),
+                padding: const EdgeInsets.symmetric(vertical: 5.0),
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.blue[900], // Dark blue color for button background
@@ -91,7 +104,7 @@ class BetDetailDialog extends StatelessWidget {
                   onPressed: () {},
                   child: Text(
                     option,
-                    style: TextStyle(fontSize: 18.0, color: Colors.white),
+                    style: const TextStyle(fontSize: 18.0, color: Colors.white),
                   ),
                 ),
               ),
@@ -100,7 +113,7 @@ class BetDetailDialog extends StatelessWidget {
       ),
       actions: <Widget>[
         TextButton(
-          child: Text('Close'),
+          child: const Text('Close'),
           onPressed: () {
             Navigator.of(context).pop();
           },
