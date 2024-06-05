@@ -1,17 +1,13 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:shared_preferences/shared_preferences.dart';
-
 import 'bet_card.dart';
 import 'constants.dart';
-import 'login_page.dart';
 import 'create_bet_form.dart';
 
 class BetHomePage extends StatefulWidget {
-  final String hashedSeed;
 
-  BetHomePage({this.hashedSeed=''});
+  const BetHomePage({super.key});
 
   @override
   _BetHomePageState createState() => _BetHomePageState();
@@ -49,24 +45,13 @@ class _BetHomePageState extends State<BetHomePage>
           pastBets = data.where((bet) => bet['status'] == 0).toList();
         });
       } else {
-        print(
-            'Failed to load bets: ${response.statusCode} ${response.reasonPhrase}');
+        print('Failed to load bets: ${response.statusCode} ${response.reasonPhrase}');
         throw Exception('Failed to load bets');
       }
     } catch (e) {
       print('Error: $e');
       throw Exception('Failed to load bets');
     }
-  }
-
-  Future<void> _logout() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.remove('ss_ecrpt');
-    await prefs.remove('password');
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (context) => LoginPage()),
-    );
   }
 
   @override
@@ -94,10 +79,6 @@ class _BetHomePageState extends State<BetHomePage>
           IconButton(
             icon: const Icon(Icons.refresh),
             onPressed: _fetchBets,
-          ),
-          IconButton(
-            icon: const Icon(Icons.logout),
-            onPressed: _logout,
           ),
         ],
       ),
@@ -150,9 +131,9 @@ class _BetHomePageState extends State<BetHomePage>
             child: TabBarView(
               controller: _tabController,
               children: [
-                BetList(bets: ongoingBets, isSmallScreen: isSmallScreen, userId: widget.hashedSeed,),
+                BetList(bets: ongoingBets, isSmallScreen: isSmallScreen),
                 BetList(bets: pastBets, isSmallScreen: isSmallScreen),
-                CreateBetForm(userId: widget.hashedSeed),
+                CreateBetForm(),
               ],
             ),
           ),
@@ -165,9 +146,8 @@ class _BetHomePageState extends State<BetHomePage>
 class BetList extends StatelessWidget {
   final List<dynamic> bets;
   final bool isSmallScreen;
-  final String userId;
 
-  BetList({super.key, required this.bets, required this.isSmallScreen, this.userId=''});
+  BetList({super.key, required this.bets, required this.isSmallScreen});
 
   @override
   Widget build(BuildContext context) {
@@ -199,7 +179,6 @@ class BetList extends StatelessWidget {
             no_ops: bet['no_ops'],
             oracle_id: bet['oracle_id'].split(','),
             oracle_fee: bet['oracle_fee'].split(','),
-            userId: userId,
           );
         },
       ),

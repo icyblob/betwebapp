@@ -17,7 +17,6 @@ class BetDetailDialog extends StatefulWidget {
   final int no_ops;
   final List<String> oracle_id;
   final List<String> oracle_fee;
-  final String userId;
   // final bool status;
 
   BetDetailDialog({super.key,
@@ -35,7 +34,6 @@ class BetDetailDialog extends StatefulWidget {
     required this.no_ops,
     required this.oracle_id,
     required this.oracle_fee,
-    required this.userId,
     // required this.status
   });
 
@@ -143,8 +141,6 @@ class _BetDetailDialogState extends State<BetDetailDialog> {
                 bet_id: widget.bet_id,
                 option_id: _selectedOption!,
                 max_slot_per_option: widget.max_slot_per_option,
-                creatorId: widget.creator,
-                userId: widget.userId,
               ),
             );
           },

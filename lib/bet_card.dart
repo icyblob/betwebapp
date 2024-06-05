@@ -17,7 +17,6 @@ class BetCard extends StatelessWidget {
   final int no_ops;
   final List<String> oracle_id;
   final List<String> oracle_fee;
-  final String userId;
   // final bool status;
 
   BetCard({super.key,
@@ -35,7 +34,6 @@ class BetCard extends StatelessWidget {
     required this.no_ops,
     required this.oracle_id,
     required this.oracle_fee,
-    required this.userId
     // required this.status
   });
 
@@ -65,7 +63,6 @@ class BetCard extends StatelessWidget {
                 no_ops: no_ops,
                 oracle_id: oracle_id,
                 oracle_fee: oracle_fee,
-                userId: userId,
                 // status: status,
               ),
             );

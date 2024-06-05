@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import 'login_page.dart';
+import 'bet_home_page.dart';
 
 void main() {
   runApp(QuotteryApp());
@@ -19,7 +19,7 @@ class QuotteryApp extends StatelessWidget {
           buttonColor: Colors.blue[900], // Dark blue color for buttons
         ),
       ),
-      home: LoginPage(),
+      home: BetHomePage(),
     );
   }
 }

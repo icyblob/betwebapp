@@ -1,26 +1,21 @@
 import 'package:intl/intl.dart';
 import 'package:betweb/constants.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
-import 'package:encrypt/encrypt.dart' as encrypt;
-import 'package:shared_preferences/shared_preferences.dart';
 
 import 'dart:convert';
 import 'decimal_text_input_formatter.dart';
 
-
 class CreateBetForm extends StatefulWidget {
-  final String userId;
-
-  CreateBetForm({required this.userId});
-
   @override
   _CreateBetFormState createState() => _CreateBetFormState();
 }
 
 class _CreateBetFormState extends State<CreateBetForm> {
   final _formKey = GlobalKey<FormState>();
-  final TextEditingController _betDescriptionController = TextEditingController();
+  final TextEditingController _betDescriptionController =
+      TextEditingController();
   int _numberOfOptions = 2;
   int _numberOfOracles = 1;
   DateTime _closeDate = DateTime.now();
@@ -28,8 +23,10 @@ class _CreateBetFormState extends State<CreateBetForm> {
   List<TextEditingController> _optionControllers = [];
   List<TextEditingController> _oracleIdControllers = [];
   List<TextEditingController> _oracleFeeControllers = [];
-  final TextEditingController _numQusPerBetSlotController = TextEditingController();
-  final TextEditingController _maxBetSlotsPerOptionController = TextEditingController();
+  final TextEditingController _numQusPerBetSlotController =
+      TextEditingController();
+  final TextEditingController _maxBetSlotsPerOptionController =
+      TextEditingController();
 
   @override
   void initState() {
@@ -41,28 +38,29 @@ class _CreateBetFormState extends State<CreateBetForm> {
   void _initializeOptionControllers() {
     _optionControllers = List.generate(
       _numberOfOptions,
-          (index) => TextEditingController(),
+      (index) => TextEditingController(),
     );
   }
 
   void _initializeOracleControllers() {
     _oracleIdControllers = List.generate(
       _numberOfOracles,
-          (index) => TextEditingController(),
+      (index) => TextEditingController(),
     );
     _oracleFeeControllers = List.generate(
       _numberOfOracles,
-          (index) => TextEditingController(),
+      (index) => TextEditingController(),
     );
   }
 
   Future<void> _selectDate(BuildContext context, bool isCloseDate) async {
     final DateTime picked = await showDatePicker(
-      context: context,
-      initialDate: isCloseDate ? _closeDate : _endDate,
-      firstDate: DateTime.now(),
-      lastDate: DateTime(2101),
-    ) ?? (isCloseDate ? _closeDate : _endDate);
+          context: context,
+          initialDate: isCloseDate ? _closeDate : _endDate,
+          firstDate: DateTime.now(),
+          lastDate: DateTime(2101),
+        ) ??
+        (isCloseDate ? _closeDate : _endDate);
 
     if (picked != (isCloseDate ? _closeDate : _endDate)) {
       setState(() {
@@ -76,36 +74,31 @@ class _CreateBetFormState extends State<CreateBetForm> {
   }
 
   void _createBet() async {
-    // Prompt for password
-    final password = await _promptForPassword();
-    if (password == null) {
-      return;
-    }
-
-    // Decrypt the seed
-    final decryptedSeed = await _decryptSeed(password);
-    if (decryptedSeed == null) {
-      _showErrorDialog('Incorrect password');
+    // Prompt for seed
+    final seed = await _promptForSeed();
+    if (seed == null) {
       return;
     }
 
     // Prepare bet data
     final data = {
       'no_options': _numberOfOptions,
-      'creator': widget.userId,
       'bet_desc': _betDescriptionController.text,
       'no_ops': _numberOfOptions,
-      'option_desc': _optionControllers.map((controller) => controller.text).toList(),
+      'option_desc':
+          _optionControllers.map((controller) => controller.text).toList(),
       'max_slot_per_option': _maxBetSlotsPerOptionController.text,
       'amount_per_bet_slot': _numQusPerBetSlotController.text,
       'open_date': DateFormat('yy-MM-dd').format(DateTime.now()),
       'close_date': DateFormat('yy-MM-dd').format(_closeDate),
       'end_date': DateFormat('yy-MM-dd').format(_endDate),
       'result': null,
-      'oracle_id': _oracleIdControllers.map((controller) => controller.text).toList(),
-      'oracle_fee': _oracleFeeControllers.map((controller) => controller.text).toList(),
+      'oracle_id':
+          _oracleIdControllers.map((controller) => controller.text).toList(),
+      'oracle_fee':
+          _oracleFeeControllers.map((controller) => controller.text).toList(),
       'status': 1,
-      'seed': decryptedSeed,
+      'seed': seed,
     };
 
     final response = await http.post(
@@ -136,7 +129,7 @@ class _CreateBetFormState extends State<CreateBetForm> {
                   setState(() {});
                 }
               },
-              child: Text('OK'),
+              child: const Text('OK'),
             ),
           ],
         );
@@ -144,81 +137,66 @@ class _CreateBetFormState extends State<CreateBetForm> {
     );
   }
 
-  Future<String?> _promptForPassword() async {
-    String? password;
+  Future<String?> _promptForSeed() async {
+    String? seed;
+    String? errorMessage;
     await showDialog(
       context: context,
       builder: (BuildContext context) {
-        final _passwordController = TextEditingController();
-        return AlertDialog(
-          title: const Text('Enter Password'),
-          content: TextField(
-            controller: _passwordController,
-            decoration: const InputDecoration(labelText: 'Password'),
-            obscureText: true,
-          ),
-          actions: <Widget>[
-            TextButton(
-              onPressed: () {
-                password = _passwordController.text;
-                Navigator.of(context).pop();
-              },
-              child: const Text('OK'),
-            ),
-          ],
+        final seedController = TextEditingController();
+        return StatefulBuilder(
+          builder: (context, setState) {
+            bool isButtonEnabled = seedController.text.length == 55;
+            seedController.addListener(() {
+              setState(() {
+                isButtonEnabled = seedController.text.length == 55;
+              });
+            });
+            return AlertDialog(
+              title: Text('Enter Seed'),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  TextField(
+                    controller: seedController,
+                    decoration: InputDecoration(
+                      labelText: 'Seed',
+                      errorText: errorMessage,
+                    ),
+                    obscureText: true,
+                    maxLength: 55,
+                    inputFormatters: [
+                      FilteringTextInputFormatter.allow(RegExp(r'[a-z]')),
+                    ],
+                  ),
+                ],
+              ),
+              actions: <Widget>[
+                TextButton(
+                  onPressed: () {
+                    if (seedController.text.length == 55) {
+                      seed = seedController.text;
+                      Navigator.of(context).pop();
+                    } else {
+                      setState(() {
+                        errorMessage = 'Seed must be exactly 55 characters';
+                      });
+                    }
+                  },
+                  child: Text(
+                    'OK',
+                    style: TextStyle(
+                      color: isButtonEnabled ? Colors.blueAccent : Colors.grey,
+                    ),
+                  ),
+                )
+              ],
+            );
+          },
         );
       },
     );
-    return password;
-  }
-
-  // Generate a key from a password
-  encrypt.Key deriveKeyFromPassword(String password) {
-    final keyBytes = utf8.encode(password.padRight(32, '*').substring(0, 32));
-    return encrypt.Key(keyBytes);
-  }
-
-  Future<String?> _decryptSeed(String password) async {
-    final prefs = await SharedPreferences.getInstance();
-    if (!prefs.containsKey('password')) {
-      return null;
-    }
-
-      final encryptedSeed = prefs.getString('ss_ecrpt');
-      if (encryptedSeed == null) {
-        return null;
-      }
-
-    final key = deriveKeyFromPassword(password);
-    final encryptedBytes = base64.decode(encryptedSeed);
-
-    final iv = encrypt.IV(encryptedBytes.sublist(0, 16));
-    final encrypted = encrypt.Encrypted(encryptedBytes.sublist(16));
-    final encrypter = encrypt.Encrypter(encrypt.AES(key));
-
-    final seed = encrypter.decrypt(encrypted, iv: iv);
     return seed;
-
-  }
-
-  void _showErrorDialog(String message) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('Error'),
-          content: Text(message),
-          actions: <Widget>[
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: const Text('OK'),
-            ),
-          ],
-        );
-      },
-    );
   }
 
   @override
@@ -256,7 +234,8 @@ class _CreateBetFormState extends State<CreateBetForm> {
                       decoration: const InputDecoration(
                         labelText: 'Number of Options',
                       ),
-                      items: List.generate(7, (index) => index + 2).map((value) {
+                      items:
+                          List.generate(7, (index) => index + 2).map((value) {
                         return DropdownMenuItem<int>(
                           value: value,
                           child: Text(value.toString()),
@@ -274,7 +253,9 @@ class _CreateBetFormState extends State<CreateBetForm> {
                     icon: const Icon(Icons.help),
                     onPressed: () {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Number of options to choose. Maximum: 8 options.')),
+                        SnackBar(
+                            content: Text(
+                                'Number of options to choose. Maximum: 8 options.')),
                       );
                     },
                   ),
@@ -289,7 +270,8 @@ class _CreateBetFormState extends State<CreateBetForm> {
                       decoration: InputDecoration(
                         labelText: 'Option ${index + 1}',
                         hintText: 'Enter option description',
-                        counterText: '${_optionControllers[index].text.length}/32',
+                        counterText:
+                            '${_optionControllers[index].text.length}/32',
                       ),
                       maxLength: 32,
                       onChanged: (text) {
@@ -308,7 +290,8 @@ class _CreateBetFormState extends State<CreateBetForm> {
                       decoration: const InputDecoration(
                         labelText: 'Number of Oracle Providers',
                       ),
-                      items: List.generate(8, (index) => index + 1).map((value) {
+                      items:
+                          List.generate(8, (index) => index + 1).map((value) {
                         return DropdownMenuItem<int>(
                           value: value,
                           child: Text(value.toString()),
@@ -326,7 +309,9 @@ class _CreateBetFormState extends State<CreateBetForm> {
                     icon: const Icon(Icons.help),
                     onPressed: () {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Oracle provider\'s ID (60 characters) and fee. Maximum: 8 oracles.')),
+                        const SnackBar(
+                            content: Text(
+                                'Oracle provider\'s ID (60 characters) and fee. Maximum: 8 oracles.')),
                       );
                     },
                   ),
@@ -373,7 +358,8 @@ class _CreateBetFormState extends State<CreateBetForm> {
               ),
               const SizedBox(height: 16.0),
               ListTile(
-                title: Text("Close Date: ${DateFormat.yMd().format(_closeDate)}"),
+                title:
+                    Text("Close Date: ${DateFormat.yMd().format(_closeDate)}"),
                 trailing: const Icon(Icons.calendar_today),
                 onTap: () => _selectDate(context, true),
               ),

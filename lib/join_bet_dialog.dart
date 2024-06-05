@@ -1,23 +1,20 @@
-import 'package:betweb/constants.dart';
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:encrypt/encrypt.dart' as encrypt;
-import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:flutter/services.dart';
+import 'dart:convert';
+
+import 'constants.dart';
 
 class JoinBetDialog extends StatefulWidget {
   final int bet_id;
   final int option_id;
   final int max_slot_per_option;
-  final String creatorId;
-  final String userId;
 
-  const JoinBetDialog({super.key,
+  const JoinBetDialog({
+    super.key,
     required this.bet_id,
     required this.option_id,
     required this.max_slot_per_option,
-    required this.creatorId,
-    required this.userId,
   });
 
   @override
@@ -27,37 +24,31 @@ class JoinBetDialog extends StatefulWidget {
 class _JoinBetDialogState extends State<JoinBetDialog> {
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _numSlotsController = TextEditingController();
-  final TextEditingController _amountPerSlotController = TextEditingController();
+  final TextEditingController _amountPerSlotController =
+      TextEditingController();
   bool _isJoinButtonEnabled = false;
 
   void _updateJoinButtonState() {
     setState(() {
-      _isJoinButtonEnabled = _numSlotsController.text.isNotEmpty && _amountPerSlotController.text.isNotEmpty;
+      _isJoinButtonEnabled = _numSlotsController.text.isNotEmpty &&
+          _amountPerSlotController.text.isNotEmpty;
     });
   }
 
   void _joinBet() async {
-    // Prompt for password
-    final password = await _promptForPassword();
-    if (password == null) {
-      return;
-    }
-
-    // Decrypt the seed
-    final decryptedSeed = await _decryptSeed(password);
-    if (decryptedSeed == null) {
-      _showErrorDialog('Incorrect password');
+    // Prompt for seed
+    final seed = await _promptForSeed();
+    if (seed == null) {
       return;
     }
 
     // Prepare join bet data
     final data = {
       'bet_id': widget.bet_id,
-      'user_id': widget.userId,
+      'seed': seed,
       'option_id': widget.option_id,
       'num_slots': int.parse(_numSlotsController.text),
       'amount_per_slot': double.parse(_amountPerSlotController.text),
-      'seed': decryptedSeed,
     };
 
     final response = await http.post(
@@ -90,80 +81,69 @@ class _JoinBetDialogState extends State<JoinBetDialog> {
     );
   }
 
-  Future<String?> _promptForPassword() async {
-    String? password;
+  Future<String?> _promptForSeed() async {
+    String? seed;
+    String? errorMessage;
+
     await showDialog(
       context: context,
       builder: (BuildContext context) {
-        final _passwordController = TextEditingController();
-        return AlertDialog(
-          title: const Text('Enter Password'),
-          content: TextField(
-            controller: _passwordController,
-            decoration: const InputDecoration(labelText: 'Password'),
-            obscureText: true,
-          ),
-          actions: <Widget>[
-            TextButton(
-              onPressed: () {
-                password = _passwordController.text;
-                Navigator.of(context).pop();
-              },
-              child: const Text('OK'),
-            ),
-          ],
+        final seedController = TextEditingController();
+        return StatefulBuilder(
+          builder: (context, setState) {
+            // bool isButtonEnabled = seedController.text.length == 55;
+            bool isButtonEnabled = seedController.text.length == 55;
+            // Update the button state when the text changes
+            seedController.addListener(() {
+              setState(() {
+                isButtonEnabled = seedController.text.length == 55;
+              });
+            });
+            return AlertDialog(
+              title: const Text('Enter Seed'),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  TextField(
+                    controller: seedController,
+                    decoration: InputDecoration(
+                      labelText: 'Seed',
+                      errorText: errorMessage,
+                    ),
+                    obscureText: true,
+                    maxLength: 55,
+                    inputFormatters: [
+                      FilteringTextInputFormatter.allow(RegExp(r'[a-z]')),
+                    ],
+                  ),
+                ],
+              ),
+              actions: <Widget>[
+                TextButton(
+                  onPressed: () {
+                    if (seedController.text.length == 55) {
+                      seed = seedController.text;
+                      Navigator.of(context).pop();
+                    } else {
+                      setState(() {
+                        errorMessage = 'Seed must be exactly 55 characters';
+                      });
+                    }
+                  },
+                  child: Text(
+                    'OK',
+                    style: TextStyle(
+                      color: isButtonEnabled ? Colors.blueAccent : Colors.grey,
+                    ),
+                  ),
+                )
+              ],
+            );
+          },
         );
       },
     );
-    return password;
-  }
-
-  // Generate a key from a password
-  encrypt.Key deriveKeyFromPassword(String password) {
-    final keyBytes = utf8.encode(password.padRight(32, '*').substring(0, 32));
-    return encrypt.Key(keyBytes);
-  }
-
-  Future<String?> _decryptSeed(String password) async {
-    final prefs = await SharedPreferences.getInstance();
-    if (!prefs.containsKey('password')) {
-      return null;
-    }
-
-    final encryptedSeed = prefs.getString('ss_ecrpt');
-    if (encryptedSeed == null) {
-      return null;
-    }
-
-    final key = deriveKeyFromPassword(password);
-    final encryptedBytes = base64.decode(encryptedSeed);
-
-    final iv = encrypt.IV(encryptedBytes.sublist(0, 16));
-    final encrypted = encrypt.Encrypted(encryptedBytes.sublist(16));
-    final encrypter = encrypt.Encrypter(encrypt.AES(key));
-
-    final seed = encrypter.decrypt(encrypted, iv: iv);
     return seed;
-  }
-
-  void _showErrorDialog(String message) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('Error'),
-          content: Text(message),
-          actions: <Widget>[
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: const Text('OK'),
-            ),
-          ],
-        );
-      },
-    );
   }
 
   @override
@@ -183,7 +163,8 @@ class _JoinBetDialogState extends State<JoinBetDialog> {
               controller: _numSlotsController,
               decoration: InputDecoration(
                 labelText: 'Number of Bet Slots',
-                hintText: 'Enter number of bet slots (max: ${widget.max_slot_per_option})',
+                hintText:
+                    'Enter number of bet slots (max: ${widget.max_slot_per_option})',
               ),
               keyboardType: TextInputType.number,
               onChanged: (value) => _updateJoinButtonState(),
@@ -230,14 +211,15 @@ class _JoinBetDialogState extends State<JoinBetDialog> {
         TextButton(
           onPressed: _isJoinButtonEnabled
               ? () {
-            if (_formKey.currentState?.validate() ?? false) {
-              _joinBet();
-            }
-          }
+                  if (_formKey.currentState?.validate() ?? false) {
+                    _joinBet();
+                  }
+                }
               : null,
           child: Text(
             'Join',
-            style: TextStyle(color: _isJoinButtonEnabled ? Colors.blue : Colors.grey),
+            style: TextStyle(
+                color: _isJoinButtonEnabled ? Colors.blue : Colors.grey),
           ),
         ),
       ],
