@@ -17,9 +17,13 @@ class BetDetailDialog extends StatefulWidget {
   final int no_ops;
   final List<String> oracle_id;
   final List<String> oracle_fee;
-  // final bool status;
+  final String current_total_qus;
+  final String current_num_selection;
+  final List<int> remaining_slots;
+  final List<Color> slot_colors;
 
-  BetDetailDialog({super.key,
+  BetDetailDialog({
+    super.key,
     required this.bet_id,
     required this.no_options,
     required this.creator,
@@ -34,7 +38,10 @@ class BetDetailDialog extends StatefulWidget {
     required this.no_ops,
     required this.oracle_id,
     required this.oracle_fee,
-    // required this.status
+    required this.current_total_qus,
+    required this.current_num_selection,
+    required this.remaining_slots,
+    required this.slot_colors,
   });
 
   @override
@@ -46,11 +53,12 @@ class _BetDetailDialogState extends State<BetDetailDialog> {
 
   @override
   Widget build(BuildContext context) {
+    var current_slot = widget.remaining_slots.map((slot) => widget.max_slot_per_option - slot).toList();
     return AlertDialog(
       backgroundColor: Colors.white,
       title: const Text(
         'Bet Details',
-        style: TextStyle(fontSize: 20.0),
+        style: TextStyle(fontSize: 30.0, fontWeight: FontWeight.bold, color: Colors.orange),
       ),
       content: SingleChildScrollView(
         child: ListBody(
@@ -92,33 +100,56 @@ class _BetDetailDialogState extends State<BetDetailDialog> {
               style: const TextStyle(fontSize: 20.0),
             ),
             Text(
-              widget.bet_desc,
+              'Current Total Qus: ${widget.current_total_qus}',
+              // Display the new field
               style: const TextStyle(fontSize: 20.0),
             ),
-            const SizedBox(height: 10.0),
-            const Text(
-              'Options:',
-              style: TextStyle(fontSize: 20.0),
+            const SizedBox(height: 20.0),
+            Text(
+              widget.bet_desc,
+              style: const TextStyle(
+                  fontSize: 20.0,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.green),
             ),
+            const SizedBox(height: 10.0),
             for (var i = 0; i < widget.option_desc.length; i++)
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 5.0),
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: _selectedOption == i ? Colors.green : Colors.blue[900],
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10.0),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 20,
+                      height: 20,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: widget.slot_colors[i],
+                      ),
                     ),
-                  ),
-                  onPressed: () {
-                    setState(() {
-                      _selectedOption = i;
-                    });
-                  },
-                  child: Text(
-                    widget.option_desc[i],
-                    style: const TextStyle(fontSize: 18.0, color: Colors.white),
-                  ),
+                    const SizedBox(width: 10.0),
+                    Expanded(
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: _selectedOption == i
+                              ? Colors.green
+                              : Colors.blue[900],
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10.0),
+                          ),
+                        ),
+                        onPressed: () {
+                          setState(() {
+                            _selectedOption = i;
+                          });
+                        },
+                        child: Text(
+                          '${widget.option_desc[i]} (${current_slot[i]}/${widget.max_slot_per_option})',
+                          style: const TextStyle(
+                              fontSize: 18.0, color: Colors.white),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
           ],
@@ -135,18 +166,19 @@ class _BetDetailDialogState extends State<BetDetailDialog> {
           onPressed: _selectedOption == null
               ? null
               : () {
-            showDialog(
-              context: context,
-              builder: (context) => JoinBetDialog(
-                bet_id: widget.bet_id,
-                option_id: _selectedOption!,
-                max_slot_per_option: widget.max_slot_per_option,
-              ),
-            );
-          },
+                  showDialog(
+                    context: context,
+                    builder: (context) => JoinBetDialog(
+                      bet_id: widget.bet_id,
+                      option_id: _selectedOption!,
+                      max_slot_per_option: widget.max_slot_per_option,
+                    ),
+                  );
+                },
           child: Text(
             'Join Bet',
-            style: TextStyle(color: _selectedOption == null ? Colors.grey : Colors.blue),
+            style: TextStyle(
+                color: _selectedOption == null ? Colors.grey : Colors.blue),
           ),
         ),
       ],

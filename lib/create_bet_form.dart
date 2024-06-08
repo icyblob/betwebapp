@@ -89,9 +89,9 @@ class _CreateBetFormState extends State<CreateBetForm> {
           _optionControllers.map((controller) => controller.text).toList(),
       'max_slot_per_option': _maxBetSlotsPerOptionController.text,
       'amount_per_bet_slot': _numQusPerBetSlotController.text,
-      'open_date': DateFormat('yy-MM-dd').format(DateTime.now()),
-      'close_date': DateFormat('yy-MM-dd').format(_closeDate),
-      'end_date': DateFormat('yy-MM-dd').format(_endDate),
+      'open_date': DateFormat('yyyy-MM-dd').format(DateTime.now()),
+      'close_date': DateFormat('yyyy-MM-dd').format(_closeDate),
+      'end_date': DateFormat('yyyy-MM-dd').format(_endDate),
       'result': null,
       'oracle_id':
           _oracleIdControllers.map((controller) => controller.text).toList(),
@@ -253,7 +253,7 @@ class _CreateBetFormState extends State<CreateBetForm> {
                     icon: const Icon(Icons.help),
                     onPressed: () {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
+                        const SnackBar(
                             content: Text(
                                 'Number of options to choose. Maximum: 8 options.')),
                       );
@@ -359,12 +359,12 @@ class _CreateBetFormState extends State<CreateBetForm> {
               const SizedBox(height: 16.0),
               ListTile(
                 title:
-                    Text("Close Date: ${DateFormat.yMd().format(_closeDate)}"),
+                    Text("Close Date: ${DateFormat('yyyy-MM-dd').format(_closeDate)}"),
                 trailing: const Icon(Icons.calendar_today),
                 onTap: () => _selectDate(context, true),
               ),
               ListTile(
-                title: Text("End Date: ${DateFormat.yMd().format(_endDate)}"),
+                title: Text("End Date: ${DateFormat('yyyy-MM-dd').format(_endDate)}"),
                 trailing: const Icon(Icons.calendar_today),
                 onTap: () => _selectDate(context, false),
               ),

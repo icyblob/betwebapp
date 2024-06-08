@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 import 'bet_detail_dialog.dart';
 
@@ -17,9 +18,12 @@ class BetCard extends StatelessWidget {
   final int no_ops;
   final List<String> oracle_id;
   final List<String> oracle_fee;
+  final String current_num_selection;
+  final String current_total_qus; // used for stats
   // final bool status;
 
-  BetCard({super.key,
+  BetCard({
+    super.key,
     required this.bet_id,
     required this.no_options,
     required this.creator,
@@ -34,11 +38,50 @@ class BetCard extends StatelessWidget {
     required this.no_ops,
     required this.oracle_id,
     required this.oracle_fee,
+    required this.current_num_selection,
+    required this.current_total_qus,
     // required this.status
   });
 
+  int _calculateDaysToExpire() {
+    final now = DateTime.now();
+    final closeDate = DateFormat('yyyy-MM-dd').parse(close_date);
+    return closeDate.difference(now).inDays;
+  }
+
+  double _calculateTotalFees() {
+    return oracle_fee
+        .map((fee) => double.tryParse(fee) ?? 0)
+        .reduce((a, b) => a + b);
+  }
+
+  List<int> _calculateRemainingSlots() {
+    List<int> selections =
+        current_num_selection.split(',').map((e) => int.parse(e)).toList();
+    return selections
+        .map((selection) => max_slot_per_option - selection)
+        .toList();
+  }
+
+  Color _determineColor(int remainingSlots) {
+    double percentage = remainingSlots / max_slot_per_option;
+    if (percentage > 0.66) {
+      return Colors.green;
+    } else if (percentage > 0.33) {
+      return Colors.yellow;
+    } else {
+      return Colors.red;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    final daysToExpire = _calculateDaysToExpire();
+    final totalFees = _calculateTotalFees();
+    final remainingSlots = _calculateRemainingSlots();
+    final slotColors =
+        remainingSlots.map((slots) => _determineColor(slots)).toList();
+
     return LayoutBuilder(
       builder: (context, constraints) {
         double cardArea = constraints.maxWidth * constraints.maxHeight;
@@ -63,7 +106,10 @@ class BetCard extends StatelessWidget {
                 no_ops: no_ops,
                 oracle_id: oracle_id,
                 oracle_fee: oracle_fee,
-                // status: status,
+                current_num_selection: current_num_selection,
+                current_total_qus: current_total_qus,
+                remaining_slots: remainingSlots,
+                slot_colors: slotColors,
               ),
             );
           },
@@ -74,31 +120,78 @@ class BetCard extends StatelessWidget {
             color: Colors.white,
             elevation: 5.0,
             child: Padding(
-              padding: const EdgeInsets.all(10.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  Text(
-                    bet_desc,
-                    textAlign: TextAlign.center,
-                    style: TextStyle(fontSize: textSize, fontWeight: FontWeight.bold, color: Colors.blue[900]),
-                  ),
-                  const SizedBox(height: 10.0),
-                  for (var option in option_desc)
-                    Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 5.0),
-                      child: ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.blue[900], // Dark blue color for button background
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10.0),
-                          ),
-                        ),
-                        onPressed: () {},
-                        child: Text(option, style: TextStyle(fontSize: textSize/1.5, color: Colors.white)),
-                      ),
+              padding: EdgeInsets.all(10.0),
+              child: SingleChildScrollView(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Text(
+                      bet_desc,
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                          fontSize: textSize,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.blue[900]),
                     ),
-                ],
+                    const SizedBox(height: 10.0),
+                    for (int i = 0; i < option_desc.length; i++)
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 5.0),
+                        child: Row(
+                          children: [
+                            Container(
+                              width: textSize,
+                              height: textSize,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: slotColors[i],
+                              ),
+                            ),
+                            const SizedBox(width: 10.0),
+                            Expanded(
+                              child: ElevatedButton(
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.blue[900],
+                                  // Dark blue color for button background
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(10.0),
+                                  ),
+                                ),
+                                onPressed: () {},
+                                child: Text(
+                                  '${option_desc[i]}',
+                                  style: TextStyle(
+                                      fontSize: textSize / 1.5,
+                                      color: Colors.white),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    const SizedBox(height: 10.0),
+                    Text(
+                      'Expires in $daysToExpire days',
+                      // Display the days to expire
+                      style: TextStyle(
+                          fontSize: textSize * 0.5, color: Colors.grey),
+                    ),
+                    const SizedBox(height: 10.0),
+                    Text(
+                      'Fees: ${totalFees.toStringAsFixed(2)}%',
+                      style: TextStyle(
+                          fontSize: textSize * 0.5, color: Colors.black),
+                    ),
+                    const SizedBox(height: 10.0),
+                    Text(
+                      '$current_total_qus qus',
+                      style: TextStyle(
+                          fontSize: textSize * 0.5,
+                          color: Colors.amber,
+                          fontWeight: FontWeight.bold),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),

@@ -179,6 +179,8 @@ class BetList extends StatelessWidget {
             no_ops: bet['no_ops'],
             oracle_id: bet['oracle_id'].split(','),
             oracle_fee: bet['oracle_fee'].split(','),
+            current_total_qus: bet['current_total_qus'],
+            current_num_selection: bet['current_num_selection'],
           );
         },
       ),
