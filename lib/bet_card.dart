@@ -20,6 +20,7 @@ class BetCard extends StatelessWidget {
   final List<String> oracle_fee;
   final String current_num_selection;
   final String current_total_qus; // used for stats
+  final List<String> betting_odds; // betting odds
   // final bool status;
 
   BetCard({
@@ -40,6 +41,7 @@ class BetCard extends StatelessWidget {
     required this.oracle_fee,
     required this.current_num_selection,
     required this.current_total_qus,
+    required this.betting_odds,
     // required this.status
   });
 
@@ -110,6 +112,7 @@ class BetCard extends StatelessWidget {
                 current_total_qus: current_total_qus,
                 remaining_slots: remainingSlots,
                 slot_colors: slotColors,
+                betting_odds: betting_odds,
               ),
             );
           },
@@ -164,6 +167,18 @@ class BetCard extends StatelessWidget {
                                       fontSize: textSize / 1.5,
                                       color: Colors.white),
                                 ),
+                              ),
+                            ),
+                            Container(
+                              margin: const EdgeInsets.only(left: 10.0),
+                              padding: const EdgeInsets.all(5.0),
+                              decoration: BoxDecoration(
+                                border: Border.all(color: Colors.blue[900] ?? Colors.blue),
+                                borderRadius: BorderRadius.circular(5.0),
+                              ),
+                              child: Text(
+                                betting_odds[i],
+                                style: TextStyle(fontSize: textSize / 1.5, color: Colors.blue[900]),
                               ),
                             ),
                           ],

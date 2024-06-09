@@ -21,6 +21,7 @@ class BetDetailDialog extends StatefulWidget {
   final String current_num_selection;
   final List<int> remaining_slots;
   final List<Color> slot_colors;
+  final List<String> betting_odds;
 
   BetDetailDialog({
     super.key,
@@ -42,6 +43,7 @@ class BetDetailDialog extends StatefulWidget {
     required this.current_num_selection,
     required this.remaining_slots,
     required this.slot_colors,
+    required this.betting_odds,
   });
 
   @override
@@ -53,12 +55,15 @@ class _BetDetailDialogState extends State<BetDetailDialog> {
 
   @override
   Widget build(BuildContext context) {
-    var current_slot = widget.remaining_slots.map((slot) => widget.max_slot_per_option - slot).toList();
+    var current_slot = widget.remaining_slots
+        .map((slot) => widget.max_slot_per_option - slot)
+        .toList();
     return AlertDialog(
       backgroundColor: Colors.white,
       title: const Text(
         'Bet Details',
-        style: TextStyle(fontSize: 30.0, fontWeight: FontWeight.bold, color: Colors.orange),
+        style: TextStyle(
+            fontSize: 30.0, fontWeight: FontWeight.bold, color: Colors.orange),
       ),
       content: SingleChildScrollView(
         child: ListBody(
@@ -101,7 +106,6 @@ class _BetDetailDialogState extends State<BetDetailDialog> {
             ),
             Text(
               'Current Total Qus: ${widget.current_total_qus}',
-              // Display the new field
               style: const TextStyle(fontSize: 20.0),
             ),
             const SizedBox(height: 20.0),
@@ -149,6 +153,20 @@ class _BetDetailDialogState extends State<BetDetailDialog> {
                         ),
                       ),
                     ),
+                    Container(
+                      margin: const EdgeInsets.only(left: 10.0),
+                      padding: const EdgeInsets.all(5.0),
+                      decoration: BoxDecoration(
+                        border:
+                            Border.all(color: Colors.blue[900] ?? Colors.blue),
+                        borderRadius: BorderRadius.circular(5.0),
+                      ),
+                      child: Text(
+                        widget.betting_odds[i],
+                        style:
+                            const TextStyle(fontSize: 18.0, color: Colors.blue),
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -172,6 +190,8 @@ class _BetDetailDialogState extends State<BetDetailDialog> {
                       bet_id: widget.bet_id,
                       option_id: _selectedOption!,
                       max_slot_per_option: widget.max_slot_per_option,
+                      remaining_slots: widget.remaining_slots[_selectedOption!],
+                      amount_per_bet_slot: widget.amount_per_bet_slot,
                     ),
                   );
                 },

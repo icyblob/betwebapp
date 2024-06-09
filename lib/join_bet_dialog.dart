@@ -9,12 +9,16 @@ class JoinBetDialog extends StatefulWidget {
   final int bet_id;
   final int option_id;
   final int max_slot_per_option;
+  final int remaining_slots;
+  final int amount_per_bet_slot;
 
   const JoinBetDialog({
     super.key,
     required this.bet_id,
     required this.option_id,
     required this.max_slot_per_option,
+    required this.remaining_slots,
+    required this.amount_per_bet_slot,
   });
 
   @override
@@ -27,11 +31,34 @@ class _JoinBetDialogState extends State<JoinBetDialog> {
   final TextEditingController _amountPerSlotController =
       TextEditingController();
   bool _isJoinButtonEnabled = false;
+  String? _errorTextSlots;
+  String? _errorTextAmount;
 
   void _updateJoinButtonState() {
     setState(() {
       _isJoinButtonEnabled = _numSlotsController.text.isNotEmpty &&
-          _amountPerSlotController.text.isNotEmpty;
+          _amountPerSlotController.text.isNotEmpty &&
+          _errorTextSlots == null &&
+          _errorTextAmount == null;
+    });
+  }
+
+  void _validateInputs() {
+    setState(() {
+      int numSlots = int.tryParse(_numSlotsController.text) ?? 0;
+      double amountPerSlot =
+          double.tryParse(_amountPerSlotController.text) ?? 0.0;
+      if (numSlots > widget.remaining_slots) {
+        _errorTextSlots = 'Cannot exceed ${widget.remaining_slots} slots';
+      } else {
+        _errorTextSlots = null;
+      }
+      if (amountPerSlot < widget.amount_per_bet_slot) {
+        _errorTextAmount = 'Cannot be less than ${widget.amount_per_bet_slot}';
+      } else {
+        _errorTextAmount = null;
+      }
+      _updateJoinButtonState();
     });
   }
 
@@ -116,6 +143,14 @@ class _JoinBetDialogState extends State<JoinBetDialog> {
                       FilteringTextInputFormatter.allow(RegExp(r'[a-z]')),
                     ],
                   ),
+                  if (errorMessage != null)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 8.0),
+                      child: Text(
+                        errorMessage!,
+                        style: TextStyle(color: Colors.red),
+                      ),
+                    ),
                 ],
               ),
               actions: <Widget>[
@@ -164,36 +199,40 @@ class _JoinBetDialogState extends State<JoinBetDialog> {
               decoration: InputDecoration(
                 labelText: 'Number of Bet Slots',
                 hintText:
-                    'Enter number of bet slots (max: ${widget.max_slot_per_option})',
+                    'Enter number of bet slots (max: ${widget.remaining_slots})',
+                errorText: _errorTextSlots,
               ),
               keyboardType: TextInputType.number,
-              onChanged: (value) => _updateJoinButtonState(),
+              inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'[0-9]')),],
+              onChanged: (value) => _validateInputs(),
               validator: (value) {
                 if (value == null || value.isEmpty) {
                   return 'Please enter the number of bet slots';
                 }
                 final numSlots = int.tryParse(value);
-                if (numSlots == null || numSlots > widget.max_slot_per_option) {
-                  return 'Max number of bet slots is ${widget.max_slot_per_option}';
+                if (numSlots == null || numSlots > widget.remaining_slots) {
+                  return 'Max number of bet slots is ${widget.remaining_slots}';
                 }
                 return null;
               },
             ),
             TextFormField(
               controller: _amountPerSlotController,
-              decoration: const InputDecoration(
+              decoration: InputDecoration(
                 labelText: 'Amount Per Bet Slot',
                 hintText: 'Enter amount per bet slot',
+                errorText: _errorTextAmount,
               ),
               keyboardType: TextInputType.number,
-              onChanged: (value) => _updateJoinButtonState(),
+              onChanged: (value) => _validateInputs(),
+              inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'[0-9]')),],
               validator: (value) {
                 if (value == null || value.isEmpty) {
                   return 'Please enter the amount per bet slot';
                 }
                 final amount = double.tryParse(value);
-                if (amount == null) {
-                  return 'Invalid amount';
+                if (amount == null || amount < widget.amount_per_bet_slot) {
+                  return 'Cannot be less than ${widget.amount_per_bet_slot}';
                 }
                 return null;
               },
