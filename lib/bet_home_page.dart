@@ -82,7 +82,7 @@ class _BetHomePageState extends State<BetHomePage>
           ),
         ],
       ),
-      endDrawer: isSmallScreen
+      drawer: isSmallScreen
           ? Drawer(
               child: ListView(
                 padding: EdgeInsets.zero,
@@ -92,7 +92,7 @@ class _BetHomePageState extends State<BetHomePage>
                       color: Colors.blue[900],
                     ),
                     child: const Text(
-                      'Bet App',
+                      'Quottery App',
                       style: TextStyle(
                         color: Colors.white,
                         // color: Color.fromRGBO(7, 21, 27, 1.0),

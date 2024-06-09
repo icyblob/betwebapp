@@ -40,7 +40,7 @@ class _CreateBetFormState extends State<CreateBetForm> {
     _optionControllers =
         List.generate(_numberOfOptions, (index) => TextEditingController());
     _oddsControllers = List.generate(
-      _numberOfOptions,
+        _numberOfOptions,
         (index) =>
             TextEditingController()); // Initialize betting odds controllers
   }
@@ -270,24 +270,28 @@ class _CreateBetFormState extends State<CreateBetForm> {
                     child: Row(
                       children: [
                         Expanded(
-                    child: TextFormField(
-                      controller: _optionControllers[index],
-                      decoration: InputDecoration(
-                        labelText: 'Option ${index + 1}',
-                        hintText: 'Enter option description',
-                        counterText:
-                            '${_optionControllers[index].text.length}/32',
-                      ),
-                      maxLength: 32,
-                      onChanged: (text) {
-                        setState(() {});
-                      },
-                    ),
+                          child: TextFormField(
+                            controller: _optionControllers[index],
+                            decoration: InputDecoration(
+                              labelText: 'Option ${index + 1}',
+                              hintText: 'Enter option description',
+                              counterText:
+                                  '${_optionControllers[index].text.length}/32',
+                            ),
+                            maxLength: 32,
+                            onChanged: (text) {
+                              setState(() {});
+                            },
+                          ),
                         ),
                         const SizedBox(width: 8.0),
                         Expanded(
                           child: TextFormField(
                             controller: _oddsControllers[index],
+                            inputFormatters: [
+                              FilteringTextInputFormatter.allow(
+                                  RegExp(r'[0-9]|[.]')),
+                            ],
                             // Betting odds input
                             decoration: InputDecoration(
                               labelText: 'Odds ${index + 1}',
@@ -379,13 +383,14 @@ class _CreateBetFormState extends State<CreateBetForm> {
               ),
               const SizedBox(height: 16.0),
               ListTile(
-                title:
-                    Text("Close Date: ${DateFormat('yyyy-MM-dd').format(_closeDate)}"),
+                title: Text(
+                    "Close Date: ${DateFormat('yyyy-MM-dd').format(_closeDate)}"),
                 trailing: const Icon(Icons.calendar_today),
                 onTap: () => _selectDate(context, true),
               ),
               ListTile(
-                title: Text("End Date: ${DateFormat('yyyy-MM-dd').format(_endDate)}"),
+                title: Text(
+                    "End Date: ${DateFormat('yyyy-MM-dd').format(_endDate)}"),
                 trailing: const Icon(Icons.calendar_today),
                 onTap: () => _selectDate(context, false),
               ),
@@ -395,9 +400,13 @@ class _CreateBetFormState extends State<CreateBetForm> {
                   labelText: 'Number of Qus Per Bet Slot',
                 ),
                 keyboardType: TextInputType.number,
+                inputFormatters: [
+                  FilteringTextInputFormatter.allow(
+                      RegExp(r'[0-9]')),
+                ],
                 validator: (value) {
                   if (value == null || value.isEmpty) {
-                    return 'Please enter the number of qus per bet slot';
+                    return 'Please enter the minimum number of qus per bet slot';
                   }
                   return null;
                 },
@@ -408,6 +417,10 @@ class _CreateBetFormState extends State<CreateBetForm> {
                 decoration: const InputDecoration(
                   labelText: 'Max Number of Bet Slots Per Option',
                 ),
+                inputFormatters: [
+                  FilteringTextInputFormatter.allow(
+                      RegExp(r'[0-9]')),
+                ],
                 keyboardType: TextInputType.number,
                 validator: (value) {
                   if (value == null || value.isEmpty) {
