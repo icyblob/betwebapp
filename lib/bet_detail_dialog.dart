@@ -22,6 +22,7 @@ class BetDetailDialog extends StatefulWidget {
   final List<int> remaining_slots;
   final List<Color> slot_colors;
   final List<String> betting_odds;
+  final bool isPastBet;
 
   BetDetailDialog({
     super.key,
@@ -44,6 +45,7 @@ class BetDetailDialog extends StatefulWidget {
     required this.remaining_slots,
     required this.slot_colors,
     required this.betting_odds,
+    this.isPastBet = false,
   });
 
   @override
@@ -134,17 +136,22 @@ class _BetDetailDialogState extends State<BetDetailDialog> {
                     Expanded(
                       child: ElevatedButton(
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: _selectedOption == i
-                              ? Colors.green
-                              : Colors.blue[900],
+                          backgroundColor:
+                              widget.isPastBet && widget.result == i
+                                  ? Colors.green
+                                  : _selectedOption == i
+                                      ? Colors.green
+                                      : Colors.blue[900],
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(10.0),
                           ),
                         ),
                         onPressed: () {
-                          setState(() {
-                            _selectedOption = i;
-                          });
+                          if (!widget.isPastBet) {
+                            setState(() {
+                              _selectedOption = i;
+                            });
+                          }
                         },
                         child: Text(
                           '${widget.option_desc[i]} (${current_slot[i]}/${widget.max_slot_per_option})',
@@ -180,27 +187,29 @@ class _BetDetailDialogState extends State<BetDetailDialog> {
             Navigator.of(context).pop();
           },
         ),
-        TextButton(
-          onPressed: _selectedOption == null
-              ? null
-              : () {
-                  showDialog(
-                    context: context,
-                    builder: (context) => JoinBetDialog(
-                      bet_id: widget.bet_id,
-                      option_id: _selectedOption!,
-                      max_slot_per_option: widget.max_slot_per_option,
-                      remaining_slots: widget.remaining_slots[_selectedOption!],
-                      amount_per_bet_slot: widget.amount_per_bet_slot,
-                    ),
-                  );
-                },
-          child: Text(
-            'Join Bet',
-            style: TextStyle(
-                color: _selectedOption == null ? Colors.grey : Colors.blue),
+        if (!widget.isPastBet)
+          TextButton(
+            onPressed: _selectedOption == null
+                ? null
+                : () {
+                    showDialog(
+                      context: context,
+                      builder: (context) => JoinBetDialog(
+                        bet_id: widget.bet_id,
+                        option_id: _selectedOption!,
+                        max_slot_per_option: widget.max_slot_per_option,
+                        remaining_slots:
+                            widget.remaining_slots[_selectedOption!],
+                        amount_per_bet_slot: widget.amount_per_bet_slot,
+                      ),
+                    );
+                  },
+            child: Text(
+              'Join Bet',
+              style: TextStyle(
+                  color: _selectedOption == null ? Colors.grey : Colors.blue),
+            ),
           ),
-        ),
       ],
     );
   }

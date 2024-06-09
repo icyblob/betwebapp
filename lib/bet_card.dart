@@ -21,6 +21,7 @@ class BetCard extends StatelessWidget {
   final String current_num_selection;
   final String current_total_qus; // used for stats
   final List<String> betting_odds; // betting odds
+  final bool isPastBet;
   // final bool status;
 
   BetCard({
@@ -42,6 +43,7 @@ class BetCard extends StatelessWidget {
     required this.current_num_selection,
     required this.current_total_qus,
     required this.betting_odds,
+    this.isPastBet = false,
     // required this.status
   });
 
@@ -113,6 +115,7 @@ class BetCard extends StatelessWidget {
                 remaining_slots: remainingSlots,
                 slot_colors: slotColors,
                 betting_odds: betting_odds,
+                isPastBet: isPastBet,
               ),
             );
           },
@@ -154,8 +157,9 @@ class BetCard extends StatelessWidget {
                             Expanded(
                               child: ElevatedButton(
                                 style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.blue[900],
-                                  // Dark blue color for button background
+                                  backgroundColor: isPastBet && result == i
+                                      ? Colors.green
+                                      : Colors.blue[900],
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(10.0),
                                   ),

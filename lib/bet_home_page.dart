@@ -132,7 +132,7 @@ class _BetHomePageState extends State<BetHomePage>
               controller: _tabController,
               children: [
                 BetList(bets: ongoingBets, isSmallScreen: isSmallScreen),
-                BetList(bets: pastBets, isSmallScreen: isSmallScreen),
+                BetList(bets: pastBets, isSmallScreen: isSmallScreen, isPastBet: true,),
                 CreateBetForm(),
               ],
             ),
@@ -146,8 +146,12 @@ class _BetHomePageState extends State<BetHomePage>
 class BetList extends StatelessWidget {
   final List<dynamic> bets;
   final bool isSmallScreen;
+  final bool isPastBet;
 
-  BetList({super.key, required this.bets, required this.isSmallScreen});
+  BetList({super.key,
+    required this.bets,
+    required this.isSmallScreen,
+    this.isPastBet = false,});
 
   @override
   Widget build(BuildContext context) {
@@ -182,6 +186,7 @@ class BetList extends StatelessWidget {
             current_total_qus: bet['current_total_qus'],
             current_num_selection: bet['current_num_selection'],
             betting_odds: bet['betting_odds'].split(','),
+            isPastBet: isPastBet,
           );
         },
       ),
