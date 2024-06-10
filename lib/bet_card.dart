@@ -9,14 +9,14 @@ class BetCard extends StatelessWidget {
   final String bet_desc;
   final List<String> option_desc;
   final int max_slot_per_option;
-  final int amount_per_bet_slot;
+  final int min_bet_amount;
   final String open_date;
   final String close_date;
   final String end_date;
   final int result;
   final int no_ops;
   final List<String> oracle_id;
-  final List<String> oracle_fee;
+  final List<double> oracle_fee;
   final String userId;
   // final bool status;
 
@@ -27,7 +27,7 @@ class BetCard extends StatelessWidget {
     required this.bet_desc,
     required this.option_desc,
     required this.max_slot_per_option,
-    required this.amount_per_bet_slot,
+    required this.min_bet_amount,
     required this.open_date,
     required this.close_date,
     required this.end_date,
@@ -57,7 +57,7 @@ class BetCard extends StatelessWidget {
                 bet_desc: bet_desc,
                 option_desc: option_desc,
                 max_slot_per_option: max_slot_per_option,
-                amount_per_bet_slot: amount_per_bet_slot,
+                min_bet_amount: min_bet_amount,
                 open_date: open_date,
                 close_date: close_date,
                 end_date: end_date,

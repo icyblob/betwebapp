@@ -9,14 +9,14 @@ class BetDetailDialog extends StatefulWidget {
   final String bet_desc;
   final List<String> option_desc;
   final int max_slot_per_option;
-  final int amount_per_bet_slot;
+  final int min_bet_amount;
   final String open_date;
   final String close_date;
   final String end_date;
   final int result;
   final int no_ops;
   final List<String> oracle_id;
-  final List<String> oracle_fee;
+  final List<double> oracle_fee;
   final String userId;
   // final bool status;
 
@@ -27,7 +27,7 @@ class BetDetailDialog extends StatefulWidget {
     required this.bet_desc,
     required this.option_desc,
     required this.max_slot_per_option,
-    required this.amount_per_bet_slot,
+    required this.min_bet_amount,
     required this.open_date,
     required this.close_date,
     required this.end_date,
@@ -70,7 +70,7 @@ class _BetDetailDialogState extends State<BetDetailDialog> {
               style: const TextStyle(fontSize: 20.0),
             ),
             Text(
-              'Amount of qus per bet slot: ${widget.amount_per_bet_slot}',
+              'Min bet amount: ${widget.min_bet_amount}',
               style: const TextStyle(fontSize: 20.0),
             ),
             Text(
@@ -90,7 +90,7 @@ class _BetDetailDialogState extends State<BetDetailDialog> {
               style: const TextStyle(fontSize: 20.0),
             ),
             Text(
-              'Oracle Provider fees: ${widget.oracle_fee}',
+              'Oracle Provider fees (%): ${widget.oracle_fee}',
               style: const TextStyle(fontSize: 20.0),
             ),
             Text(
