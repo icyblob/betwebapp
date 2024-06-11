@@ -28,35 +28,25 @@ class JoinBetDialog extends StatefulWidget {
 class _JoinBetDialogState extends State<JoinBetDialog> {
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _numSlotsController = TextEditingController();
-  final TextEditingController _amountPerSlotController =
-      TextEditingController();
+
   bool _isJoinButtonEnabled = false;
+  num _totalFees = 0;
   String? _errorTextSlots;
-  String? _errorTextAmount;
 
   void _updateJoinButtonState() {
     setState(() {
-      _isJoinButtonEnabled = _numSlotsController.text.isNotEmpty &&
-          _amountPerSlotController.text.isNotEmpty &&
-          _errorTextSlots == null &&
-          _errorTextAmount == null;
+      _isJoinButtonEnabled =
+          _numSlotsController.text.isNotEmpty && _errorTextSlots == null;
     });
   }
 
   void _validateInputs() {
     setState(() {
       int numSlots = int.tryParse(_numSlotsController.text) ?? 0;
-      double amountPerSlot =
-          double.tryParse(_amountPerSlotController.text) ?? 0.0;
       if (numSlots > widget.remaining_slots) {
         _errorTextSlots = 'Cannot exceed ${widget.remaining_slots} slots';
       } else {
         _errorTextSlots = null;
-      }
-      if (amountPerSlot < widget.amount_per_bet_slot) {
-        _errorTextAmount = 'Cannot be less than ${widget.amount_per_bet_slot}';
-      } else {
-        _errorTextAmount = null;
       }
       _updateJoinButtonState();
     });
@@ -75,7 +65,6 @@ class _JoinBetDialogState extends State<JoinBetDialog> {
       'seed': seed,
       'option_id': widget.option_id,
       'num_slots': int.parse(_numSlotsController.text),
-      'amount_per_slot': double.parse(_amountPerSlotController.text),
     };
 
     final response = await http.post(
@@ -106,6 +95,13 @@ class _JoinBetDialogState extends State<JoinBetDialog> {
         );
       },
     );
+  }
+
+  num _getTotalFees() {
+    if (_numSlotsController.text != '') {
+      return widget.amount_per_bet_slot * int.parse(_numSlotsController.text);
+    }
+    return 0;
   }
 
   Future<String?> _promptForSeed() async {
@@ -148,7 +144,7 @@ class _JoinBetDialogState extends State<JoinBetDialog> {
                       padding: const EdgeInsets.only(top: 8.0),
                       child: Text(
                         errorMessage!,
-                        style: TextStyle(color: Colors.red),
+                        style: const TextStyle(color: Colors.red),
                       ),
                     ),
                 ],
@@ -203,8 +199,15 @@ class _JoinBetDialogState extends State<JoinBetDialog> {
                 errorText: _errorTextSlots,
               ),
               keyboardType: TextInputType.number,
-              inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'[0-9]')),],
-              onChanged: (value) => _validateInputs(),
+              inputFormatters: [
+                FilteringTextInputFormatter.allow(RegExp(r'[0-9]')),
+              ],
+              onChanged: (value) {
+                _validateInputs();
+                setState(() {
+                  _totalFees = _getTotalFees();
+                });
+              },
               validator: (value) {
                 if (value == null || value.isEmpty) {
                   return 'Please enter the number of bet slots';
@@ -216,27 +219,20 @@ class _JoinBetDialogState extends State<JoinBetDialog> {
                 return null;
               },
             ),
-            TextFormField(
-              controller: _amountPerSlotController,
-              decoration: InputDecoration(
-                labelText: 'Amount Per Bet Slot',
-                hintText: 'Enter amount per bet slot',
-                errorText: _errorTextAmount,
-              ),
-              keyboardType: TextInputType.number,
-              onChanged: (value) => _validateInputs(),
-              inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'[0-9]')),],
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Please enter the amount per bet slot';
-                }
-                final amount = double.tryParse(value);
-                if (amount == null || amount < widget.amount_per_bet_slot) {
-                  return 'Cannot be less than ${widget.amount_per_bet_slot}';
-                }
-                return null;
-              },
+            const SizedBox(height: 15.0),
+            Row(children: [
+              Text('Amount Per Bet Slot: ${widget.amount_per_bet_slot}',
+                  style: const TextStyle(
+                    color: Colors.orange,
+                  )),
+            ]),
+            const SizedBox(
+              height: 15,
             ),
+            Text(
+              'Total fees: $_totalFees',
+              style: const TextStyle(color: Colors.green),
+            )
           ],
         ),
       ),
