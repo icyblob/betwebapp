@@ -169,7 +169,7 @@ class _BetDetailDialogState extends State<BetDetailDialog> {
                         borderRadius: BorderRadius.circular(5.0),
                       ),
                       child: Text(
-                        widget.betting_odds[i],
+                        double.parse(widget.betting_odds[i]).toStringAsFixed(1),
                         style:
                             const TextStyle(fontSize: 18.0, color: Colors.blue),
                       ),

@@ -181,7 +181,7 @@ class BetCard extends StatelessWidget {
                                 borderRadius: BorderRadius.circular(5.0),
                               ),
                               child: Text(
-                                betting_odds[i],
+                                double.parse(betting_odds[i]).toStringAsFixed(1),
                                 style: TextStyle(fontSize: textSize / 1.5, color: Colors.blue[900]),
                               ),
                             ),
