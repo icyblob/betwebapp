@@ -21,7 +21,6 @@ class _CreateBetFormState extends State<CreateBetForm> {
   DateTime _closeDate = DateTime.now();
   DateTime _endDate = DateTime.now();
   List<TextEditingController> _optionControllers = [];
-  List<TextEditingController> _oddsControllers = []; // Betting odds controllers
   List<TextEditingController> _oracleIdControllers = [];
   List<TextEditingController> _oracleFeeControllers = [];
   final TextEditingController _numQusPerBetSlotController =
@@ -39,10 +38,6 @@ class _CreateBetFormState extends State<CreateBetForm> {
   void _initializeOptionControllers() {
     _optionControllers =
         List.generate(_numberOfOptions, (index) => TextEditingController());
-    _oddsControllers = List.generate(
-        _numberOfOptions,
-        (index) =>
-            TextEditingController()); // Initialize betting odds controllers
   }
 
   void _initializeOracleControllers() {
@@ -86,9 +81,6 @@ class _CreateBetFormState extends State<CreateBetForm> {
       'no_ops': _numberOfOptions,
       'option_desc':
           _optionControllers.map((controller) => controller.text).toList(),
-      'betting_odds': _oddsControllers
-          .map((controller) => controller.text)
-          .toList(), // Add betting odds
       'max_slot_per_option': _maxBetSlotsPerOptionController.text,
       'amount_per_bet_slot': _numQusPerBetSlotController.text,
       'open_date': DateFormat('yyyy-MM-dd').format(DateTime.now()),
@@ -285,22 +277,6 @@ class _CreateBetFormState extends State<CreateBetForm> {
                           ),
                         ),
                         const SizedBox(width: 8.0),
-                        Expanded(
-                          child: TextFormField(
-                            controller: _oddsControllers[index],
-                            inputFormatters: [
-                              FilteringTextInputFormatter.allow(
-                                  RegExp(r'[0-9]|[.]')),
-                            ],
-                            // Betting odds input
-                            decoration: InputDecoration(
-                              labelText: 'Odds ${index + 1}',
-                              hintText: 'Enter betting odds',
-                            ),
-                            keyboardType:
-                                TextInputType.numberWithOptions(decimal: true),
-                          ),
-                        ),
                       ],
                     ),
                   );
@@ -452,10 +428,6 @@ class _CreateBetFormState extends State<CreateBetForm> {
     _numQusPerBetSlotController.dispose();
     _maxBetSlotsPerOptionController.dispose();
     for (var controller in _optionControllers) {
-      controller.dispose();
-    }
-    for (var controller in _oddsControllers) {
-      // Dispose odds controllers
       controller.dispose();
     }
     for (var controller in _oracleIdControllers) {

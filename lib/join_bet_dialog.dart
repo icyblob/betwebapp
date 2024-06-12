@@ -65,6 +65,7 @@ class _JoinBetDialogState extends State<JoinBetDialog> {
       'seed': seed,
       'option_id': widget.option_id,
       'num_slots': int.parse(_numSlotsController.text),
+      'amount_per_slot': widget.amount_per_bet_slot,
     };
 
     final response = await http.post(
