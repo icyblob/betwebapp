@@ -137,7 +137,7 @@ class _JoinBetDialogState extends State<JoinBetDialog> {
                     obscureText: true,
                     maxLength: 55,
                     inputFormatters: [
-                      FilteringTextInputFormatter.allow(RegExp(r'[a-z]')),
+                      FilteringTextInputFormatter.allow(RegExp(r'[a-z]|[A-Z]')),
                     ],
                   ),
                   if (errorMessage != null)

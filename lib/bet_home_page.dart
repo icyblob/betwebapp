@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'bet_card.dart';
@@ -168,24 +169,47 @@ class BetList extends StatelessWidget {
         itemCount: bets.length,
         itemBuilder: (context, index) {
           final bet = bets[index];
+
+          if (kDebugMode)
+          {
+            print(bet);
+            final int bet_id = bet['bet_id'];
+            final int no_options = bet['no_options'];
+            final String creator = bet['creator'];
+            final String bet_desc = bet['bet_desc'];
+            final List<String> option_desc = List<String>.from(json.decode(bet['option_desc']));
+            final int max_slot_per_option = bet['max_slot_per_option'];
+            final int amount_per_bet_slot = bet['amount_per_bet_slot'];
+            final String open_date = bet['open_date'];
+            final String close_date = bet['close_date'];
+            final String end_date = bet['end_date'];
+            final int result = bet['result'] == "none" ? -1 : bet['result'];
+            final int no_ops = bet['no_ops'];
+            final List<String> oracle_id = List<String>.from(json.decode(bet['oracle_id']));
+            final List<double> oracle_fee = List<double>.from(json.decode(bet['oracle_fee']));
+            final List<String> current_num_selection = List<String>.from(json.decode(bet['current_num_selection']));
+            final String current_total_qus = bet['current_total_qus'];
+            final List<String> betting_odds = List<String>.from(json.decode(bet['betting_odds']));
+          }
+
           return BetCard(
             bet_id: bet['bet_id'],
             no_options: bet['no_options'],
             creator: bet['creator'],
             bet_desc: bet['bet_desc'],
-            option_desc: bet['option_desc'].split(','),
+            option_desc: List<String>.from(json.decode(bet['option_desc'])),
             max_slot_per_option: bet['max_slot_per_option'],
             amount_per_bet_slot: bet['amount_per_bet_slot'],
             open_date: bet['open_date'],
             close_date: bet['close_date'],
             end_date: bet['end_date'],
-            result: bet['result'] ?? -1,
+            result: bet['result'] == "none" ? -1 : bet['result'],
             no_ops: bet['no_ops'],
-            oracle_id: bet['oracle_id'].split(','),
-            oracle_fee: bet['oracle_fee'].split(','),
+            oracle_id: List<String>.from(json.decode(bet['oracle_id'])),
+            oracle_fee: List<double>.from(json.decode(bet['oracle_fee'])),
             current_total_qus: bet['current_total_qus'],
-            current_num_selection: bet['current_num_selection'],
-            betting_odds: bet['betting_odds'].split(','),
+            current_num_selection: List<String>.from(json.decode(bet['current_num_selection'])),
+            betting_odds: List<String>.from(json.decode(bet['betting_odds'])),
             isPastBet: isPastBet,
           );
         },

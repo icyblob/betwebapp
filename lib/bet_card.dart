@@ -17,8 +17,8 @@ class BetCard extends StatelessWidget {
   final int result;
   final int no_ops;
   final List<String> oracle_id;
-  final List<String> oracle_fee;
-  final String current_num_selection;
+  final List<double> oracle_fee;
+  final List<String> current_num_selection;
   final String current_total_qus; // used for stats
   final List<String> betting_odds; // betting odds
   final bool isPastBet;
@@ -49,19 +49,19 @@ class BetCard extends StatelessWidget {
 
   int _calculateDaysToExpire() {
     final now = DateTime.now();
-    final closeDate = DateFormat('yyyy-MM-dd').parse(close_date);
+    final closeDate = DateFormat('yy-MM-dd').parse(close_date);
     return closeDate.difference(now).inDays;
   }
 
   double _calculateTotalFees() {
     return oracle_fee
-        .map((fee) => double.tryParse(fee) ?? 0)
+        .map((fee) => fee ?? 0)
         .reduce((a, b) => a + b);
   }
 
   List<int> _calculateRemainingSlots() {
     List<int> selections =
-        current_num_selection.split(',').map((e) => int.parse(e)).toList();
+        current_num_selection.map((e) => int.parse(e)).toList();
     return selections
         .map((selection) => max_slot_per_option - selection)
         .toList();

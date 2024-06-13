@@ -83,9 +83,9 @@ class _CreateBetFormState extends State<CreateBetForm> {
           _optionControllers.map((controller) => controller.text).toList(),
       'max_slot_per_option': _maxBetSlotsPerOptionController.text,
       'amount_per_bet_slot': _numQusPerBetSlotController.text,
-      'open_date': DateFormat('yyyy-MM-dd').format(DateTime.now()),
-      'close_date': DateFormat('yyyy-MM-dd').format(_closeDate),
-      'end_date': DateFormat('yyyy-MM-dd').format(_endDate),
+      'open_date': DateFormat('yy-MM-dd').format(DateTime.now()),
+      'close_date': DateFormat('yy-MM-dd').format(_closeDate),
+      'end_date': DateFormat('yy-MM-dd').format(_endDate),
       'result': null,
       'oracle_id':
           _oracleIdControllers.map((controller) => controller.text).toList(),
@@ -160,7 +160,7 @@ class _CreateBetFormState extends State<CreateBetForm> {
                     obscureText: true,
                     maxLength: 55,
                     inputFormatters: [
-                      FilteringTextInputFormatter.allow(RegExp(r'[a-z]')),
+                      FilteringTextInputFormatter.allow(RegExp(r'[a-z]|[A-Z]')),
                     ],
                   ),
                 ],
@@ -360,13 +360,13 @@ class _CreateBetFormState extends State<CreateBetForm> {
               const SizedBox(height: 16.0),
               ListTile(
                 title: Text(
-                    "Close Date: ${DateFormat('yyyy-MM-dd').format(_closeDate)}"),
+                    "Close Date: ${DateFormat('yy-MM-dd').format(_closeDate)}"),
                 trailing: const Icon(Icons.calendar_today),
                 onTap: () => _selectDate(context, true),
               ),
               ListTile(
                 title: Text(
-                    "End Date: ${DateFormat('yyyy-MM-dd').format(_endDate)}"),
+                    "End Date: ${DateFormat('yy-MM-dd').format(_endDate)}"),
                 trailing: const Icon(Icons.calendar_today),
                 onTap: () => _selectDate(context, false),
               ),

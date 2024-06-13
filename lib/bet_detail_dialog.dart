@@ -16,9 +16,9 @@ class BetDetailDialog extends StatefulWidget {
   final int result;
   final int no_ops;
   final List<String> oracle_id;
-  final List<String> oracle_fee;
+  final List<double> oracle_fee;
   final String current_total_qus;
-  final String current_num_selection;
+  final List<String> current_num_selection;
   final List<int> remaining_slots;
   final List<Color> slot_colors;
   final List<String> betting_odds;
@@ -103,7 +103,7 @@ class _BetDetailDialogState extends State<BetDetailDialog> {
               style: const TextStyle(fontSize: 20.0),
             ),
             Text(
-              'Oracle Provider fees: ${widget.oracle_fee}',
+              'Oracle Provider fees (%): ${widget.oracle_fee}',
               style: const TextStyle(fontSize: 20.0),
             ),
             Text(
