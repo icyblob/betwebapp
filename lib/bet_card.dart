@@ -22,7 +22,7 @@ class BetCard extends StatelessWidget {
   final String current_total_qus; // used for stats
   final List<String> betting_odds; // betting odds
   final bool isPastBet;
-  // final bool status;
+  final DateTime? lastUpdateTime;
 
   BetCard({
     super.key,
@@ -44,7 +44,7 @@ class BetCard extends StatelessWidget {
     required this.current_total_qus,
     required this.betting_odds,
     this.isPastBet = false,
-    // required this.status
+    this.lastUpdateTime,
   });
 
   int _calculateDaysToExpire() {
@@ -116,6 +116,7 @@ class BetCard extends StatelessWidget {
                 slot_colors: slotColors,
                 betting_odds: betting_odds,
                 isPastBet: isPastBet,
+                lastUpdateTime: lastUpdateTime,
               ),
             );
           },

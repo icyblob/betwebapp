@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -7,7 +8,6 @@ import 'constants.dart';
 import 'create_bet_form.dart';
 
 class BetHomePage extends StatefulWidget {
-
   const BetHomePage({super.key});
 
   @override
@@ -20,6 +20,8 @@ class _BetHomePageState extends State<BetHomePage>
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   List<dynamic> ongoingBets = [];
   List<dynamic> pastBets = [];
+  Timer? _timer;  // Timer for periodic fetch
+  DateTime? lastUpdateTime;  // Store the last update time
 
   @override
   void initState() {
@@ -31,28 +33,38 @@ class _BetHomePageState extends State<BetHomePage>
   @override
   void dispose() {
     _tabController.dispose();
+    _timer?.cancel(); // Cancel the timer when disposing
     super.dispose();
   }
 
   Future<void> _fetchBets() async {
     try {
-      final response = await http
-          .get(Uri.parse('$DATABASE_SERVER/get_active_bets'));
+      final response =
+          await http.get(Uri.parse('$DATABASE_SERVER/get_active_bets'));
 
       if (response.statusCode == 200) {
         final List<dynamic> data = json.decode(response.body);
         setState(() {
           ongoingBets = data.where((bet) => bet['status'] == 1).toList();
           pastBets = data.where((bet) => bet['status'] == 0).toList();
+          lastUpdateTime = DateTime.now();  // Update the last update time
         });
       } else {
-        print('Failed to load bets: ${response.statusCode} ${response.reasonPhrase}');
+        print(
+            'Failed to load bets: ${response.statusCode} ${response.reasonPhrase}');
         throw Exception('Failed to load bets');
       }
     } catch (e) {
       print('Error: $e');
       throw Exception('Failed to load bets');
+    } finally {
+      _startTimer();  // Start the timer after fetch completes
     }
+  }
+
+  void _startTimer() {
+    _timer?.cancel();  // Cancel any existing timer
+    _timer = Timer(const Duration(seconds: 3), _fetchBets);  // Fetch bets every 3 seconds
   }
 
   @override
@@ -132,8 +144,8 @@ class _BetHomePageState extends State<BetHomePage>
             child: TabBarView(
               controller: _tabController,
               children: [
-                BetList(bets: ongoingBets, isSmallScreen: isSmallScreen),
-                BetList(bets: pastBets, isSmallScreen: isSmallScreen, isPastBet: true,),
+                BetList(bets: ongoingBets, isSmallScreen: isSmallScreen, lastUpdateTime: lastUpdateTime),
+                BetList(bets: pastBets, isSmallScreen: isSmallScreen, isPastBet: true, lastUpdateTime: lastUpdateTime),
                 CreateBetForm(),
               ],
             ),
@@ -148,11 +160,14 @@ class BetList extends StatelessWidget {
   final List<dynamic> bets;
   final bool isSmallScreen;
   final bool isPastBet;
+  final DateTime? lastUpdateTime;
 
   BetList({super.key,
     required this.bets,
     required this.isSmallScreen,
-    this.isPastBet = false,});
+    this.isPastBet = false,
+    this.lastUpdateTime,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -170,14 +185,14 @@ class BetList extends StatelessWidget {
         itemBuilder: (context, index) {
           final bet = bets[index];
 
-          if (kDebugMode)
-          {
+          if (kDebugMode) {
             print(bet);
             final int bet_id = bet['bet_id'];
             final int no_options = bet['no_options'];
             final String creator = bet['creator'];
             final String bet_desc = bet['bet_desc'];
-            final List<String> option_desc = List<String>.from(json.decode(bet['option_desc']));
+            final List<String> option_desc =
+                List<String>.from(json.decode(bet['option_desc']));
             final int max_slot_per_option = bet['max_slot_per_option'];
             final int amount_per_bet_slot = bet['amount_per_bet_slot'];
             final String open_date = bet['open_date'];
@@ -185,11 +200,15 @@ class BetList extends StatelessWidget {
             final String end_date = bet['end_date'];
             final int result = bet['result'] == "none" ? -1 : bet['result'];
             final int no_ops = bet['no_ops'];
-            final List<String> oracle_id = List<String>.from(json.decode(bet['oracle_id']));
-            final List<double> oracle_fee = List<double>.from(json.decode(bet['oracle_fee']));
-            final List<String> current_num_selection = List<String>.from(json.decode(bet['current_num_selection']));
+            final List<String> oracle_id =
+                List<String>.from(json.decode(bet['oracle_id']));
+            final List<double> oracle_fee =
+                List<double>.from(json.decode(bet['oracle_fee']));
+            final List<String> current_num_selection =
+                List<String>.from(json.decode(bet['current_num_selection']));
             final String current_total_qus = bet['current_total_qus'];
-            final List<String> betting_odds = List<String>.from(json.decode(bet['betting_odds']));
+            final List<String> betting_odds =
+                List<String>.from(json.decode(bet['betting_odds']));
           }
 
           return BetCard(
@@ -208,9 +227,11 @@ class BetList extends StatelessWidget {
             oracle_id: List<String>.from(json.decode(bet['oracle_id'])),
             oracle_fee: List<double>.from(json.decode(bet['oracle_fee'])),
             current_total_qus: bet['current_total_qus'],
-            current_num_selection: List<String>.from(json.decode(bet['current_num_selection'])),
+            current_num_selection:
+                List<String>.from(json.decode(bet['current_num_selection'])),
             betting_odds: List<String>.from(json.decode(bet['betting_odds'])),
             isPastBet: isPastBet,
+            lastUpdateTime: lastUpdateTime,
           );
         },
       ),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 import 'join_bet_dialog.dart';
 
@@ -23,6 +24,7 @@ class BetDetailDialog extends StatefulWidget {
   final List<Color> slot_colors;
   final List<String> betting_odds;
   final bool isPastBet;
+  final DateTime? lastUpdateTime;
 
   BetDetailDialog({
     super.key,
@@ -46,6 +48,7 @@ class BetDetailDialog extends StatefulWidget {
     required this.slot_colors,
     required this.betting_odds,
     this.isPastBet = false,
+    this.lastUpdateTime,
   });
 
   @override
@@ -60,6 +63,11 @@ class _BetDetailDialogState extends State<BetDetailDialog> {
     var current_slot = widget.remaining_slots
         .map((slot) => widget.max_slot_per_option - slot)
         .toList();
+
+    String lastUpdateText = widget.lastUpdateTime != null
+        ? 'Last update: ${DateFormat('yyyy-MM-dd HH:mm:ss').format(widget.lastUpdateTime!)}'
+        : '';
+
     return AlertDialog(
       backgroundColor: Colors.white,
       title: const Text(
@@ -177,6 +185,14 @@ class _BetDetailDialogState extends State<BetDetailDialog> {
                   ],
                 ),
               ),
+            const SizedBox(height: 20.0),
+            Text(
+              lastUpdateText,
+              style: const TextStyle(
+                fontSize: 14.0,
+                color: Colors.grey,
+              ),
+            ),
           ],
         ),
       ),

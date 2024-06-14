@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-
+import 'package:provider/provider.dart';
 import 'bet_home_page.dart';
 
 void main() {
@@ -19,7 +19,7 @@ class QuotteryApp extends StatelessWidget {
           buttonColor: Colors.blue[900], // Dark blue color for buttons
         ),
       ),
-      home: BetHomePage(),
+      home: const BetHomePage(),
     );
   }
 }
