@@ -204,8 +204,8 @@ class BetList extends StatelessWidget {
                 List<String>.from(json.decode(bet['oracle_id']));
             final List<double> oracle_fee =
                 List<double>.from(json.decode(bet['oracle_fee']));
-            final List<String> current_num_selection =
-                List<String>.from(json.decode(bet['current_num_selection']));
+            final List<int> current_num_selection =
+                List<int>.from(json.decode(bet['current_bet_state']));
             final String current_total_qus = bet['current_total_qus'];
             final List<String> betting_odds =
                 List<String>.from(json.decode(bet['betting_odds']));
@@ -228,7 +228,7 @@ class BetList extends StatelessWidget {
             oracle_fee: List<double>.from(json.decode(bet['oracle_fee'])),
             current_total_qus: bet['current_total_qus'],
             current_num_selection:
-                List<String>.from(json.decode(bet['current_num_selection'])),
+                List<int>.from(json.decode(bet['current_bet_state'])),
             betting_odds: List<String>.from(json.decode(bet['betting_odds'])),
             isPastBet: isPastBet,
             lastUpdateTime: lastUpdateTime,

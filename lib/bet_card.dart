@@ -18,7 +18,7 @@ class BetCard extends StatelessWidget {
   final int no_ops;
   final List<String> oracle_id;
   final List<double> oracle_fee;
-  final List<String> current_num_selection;
+  final List<int> current_num_selection;
   final String current_total_qus; // used for stats
   final List<String> betting_odds; // betting odds
   final bool isPastBet;
@@ -61,7 +61,7 @@ class BetCard extends StatelessWidget {
 
   List<int> _calculateRemainingSlots() {
     List<int> selections =
-        current_num_selection.map((e) => int.parse(e)).toList();
+        current_num_selection.map((e) => (e)).toList();
     return selections
         .map((selection) => max_slot_per_option - selection)
         .toList();

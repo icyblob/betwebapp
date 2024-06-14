@@ -19,7 +19,7 @@ class BetDetailDialog extends StatefulWidget {
   final List<String> oracle_id;
   final List<double> oracle_fee;
   final String current_total_qus;
-  final List<String> current_num_selection;
+  final List<int> current_num_selection;
   final List<int> remaining_slots;
   final List<Color> slot_colors;
   final List<String> betting_odds;
