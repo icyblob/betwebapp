@@ -3,7 +3,7 @@ import 'package:intl/intl.dart';
 
 import 'bet_detail_dialog.dart';
 
-class BetCard extends StatelessWidget {
+class BetCard extends StatefulWidget {
   final int bet_id;
   final int no_options;
   final String creator;
@@ -47,28 +47,64 @@ class BetCard extends StatelessWidget {
     this.lastUpdateTime,
   });
 
+  @override
+  _BetCardState createState() => _BetCardState();
+}
+
+class _BetCardState extends State<BetCard> {
+  final GlobalKey _contentKey = GlobalKey();
+  final ScrollController _scrollController = ScrollController();
+  bool _isOverflowing = false;
+  bool _isAtBottom = false;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance?.addPostFrameCallback((_) {
+      final contentBox = _contentKey.currentContext?.findRenderObject() as RenderBox?;
+      final cardBox = context.findRenderObject() as RenderBox?;
+      if (contentBox != null && cardBox != null) {
+        setState(() {
+          _isOverflowing = contentBox.size.height > cardBox.size.height;
+        });
+      }
+    });
+    _scrollController.addListener(() {
+      if (_scrollController.offset >= _scrollController.position.maxScrollExtent) {
+        setState(() {
+          _isAtBottom = true;
+        });
+      } else {
+        setState(() {
+          _isAtBottom = false;
+        });
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
   int _calculateDaysToExpire() {
     final now = DateTime.now();
-    final closeDate = DateFormat('yy-MM-dd').parse(close_date);
+    final closeDate = DateFormat('yy-MM-dd').parse(widget.close_date);
     return closeDate.difference(now).inDays;
   }
 
   double _calculateTotalFees() {
-    return oracle_fee
-        .map((fee) => fee ?? 0)
-        .reduce((a, b) => a + b);
+    return widget.oracle_fee.map((fee) => fee ?? 0).reduce((a, b) => a + b);
   }
 
   List<int> _calculateRemainingSlots() {
-    List<int> selections =
-        current_num_selection.map((e) => (e)).toList();
-    return selections
-        .map((selection) => max_slot_per_option - selection)
-        .toList();
+    List<int> selections = widget.current_num_selection.map((e) => e).toList();
+    return selections.map((selection) => widget.max_slot_per_option - selection).toList();
   }
 
   Color _determineColor(int remainingSlots) {
-    double percentage = remainingSlots / max_slot_per_option;
+    double percentage = remainingSlots / widget.max_slot_per_option;
     if (percentage > 0.66) {
       return Colors.green;
     } else if (percentage > 0.33) {
@@ -83,72 +119,71 @@ class BetCard extends StatelessWidget {
     final daysToExpire = _calculateDaysToExpire();
     final totalFees = _calculateTotalFees();
     final remainingSlots = _calculateRemainingSlots();
-    final slotColors =
-        remainingSlots.map((slots) => _determineColor(slots)).toList();
+    final slotColors = remainingSlots.map((slots) => _determineColor(slots)).toList();
 
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        double cardArea = constraints.maxWidth * constraints.maxHeight;
-        double textSize = cardArea * 0.00025;
-
-        return GestureDetector(
-          onTap: () {
-            showDialog(
-              context: context,
-              builder: (context) => BetDetailDialog(
-                bet_id: bet_id,
-                no_options: no_options,
-                creator: creator,
-                bet_desc: bet_desc,
-                option_desc: option_desc,
-                max_slot_per_option: max_slot_per_option,
-                amount_per_bet_slot: amount_per_bet_slot,
-                open_date: open_date,
-                close_date: close_date,
-                end_date: end_date,
-                result: result,
-                no_ops: no_ops,
-                oracle_id: oracle_id,
-                oracle_fee: oracle_fee,
-                current_num_selection: current_num_selection,
-                current_total_qus: current_total_qus,
-                remaining_slots: remainingSlots,
-                slot_colors: slotColors,
-                betting_odds: betting_odds,
-                isPastBet: isPastBet,
-                lastUpdateTime: lastUpdateTime,
-              ),
-            );
-          },
-          child: Card(
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(10.0),
-            ),
-            color: Colors.white,
-            elevation: 5.0,
-            child: Padding(
-              padding: EdgeInsets.all(10.0),
+    return GestureDetector(
+      onTap: () {
+        showDialog(
+          context: context,
+          builder: (context) => BetDetailDialog(
+            bet_id: widget.bet_id,
+            no_options: widget.no_options,
+            creator: widget.creator,
+            bet_desc: widget.bet_desc,
+            option_desc: widget.option_desc,
+            max_slot_per_option: widget.max_slot_per_option,
+            amount_per_bet_slot: widget.amount_per_bet_slot,
+            open_date: widget.open_date,
+            close_date: widget.close_date,
+            end_date: widget.end_date,
+            result: widget.result,
+            no_ops: widget.no_ops,
+            oracle_id: widget.oracle_id,
+            oracle_fee: widget.oracle_fee,
+            current_num_selection: widget.current_num_selection,
+            current_total_qus: widget.current_total_qus,
+            remaining_slots: remainingSlots,
+            slot_colors: slotColors,
+            betting_odds: widget.betting_odds,
+            isPastBet: widget.isPastBet,
+            lastUpdateTime: widget.lastUpdateTime,
+          ),
+        );
+      },
+      child: Card(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(10.0),
+        ),
+        color: Colors.white,
+        elevation: 5.0,
+        child: Stack(
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(10.0),
               child: SingleChildScrollView(
+                controller: _scrollController,
                 child: Column(
+                  key: _contentKey,
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     Text(
-                      bet_desc,
+                      widget.bet_desc,
                       textAlign: TextAlign.center,
                       style: TextStyle(
-                          fontSize: textSize,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.blue[900]),
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.blue[900],
+                      ),
                     ),
                     const SizedBox(height: 10.0),
-                    for (int i = 0; i < option_desc.length; i++)
+                    for (int i = 0; i < widget.option_desc.length; i++)
                       Padding(
                         padding: const EdgeInsets.symmetric(vertical: 5.0),
                         child: Row(
                           children: [
                             Container(
-                              width: textSize,
-                              height: textSize,
+                              width: 16,
+                              height: 16,
                               decoration: BoxDecoration(
                                 shape: BoxShape.circle,
                                 color: slotColors[i],
@@ -158,7 +193,7 @@ class BetCard extends StatelessWidget {
                             Expanded(
                               child: ElevatedButton(
                                 style: ElevatedButton.styleFrom(
-                                  backgroundColor: isPastBet && result == i
+                                  backgroundColor: widget.isPastBet && widget.result == i
                                       ? Colors.green
                                       : Colors.blue[900],
                                   shape: RoundedRectangleBorder(
@@ -167,10 +202,11 @@ class BetCard extends StatelessWidget {
                                 ),
                                 onPressed: () {},
                                 child: Text(
-                                  '${option_desc[i]}',
-                                  style: TextStyle(
-                                      fontSize: textSize / 1.5,
-                                      color: Colors.white),
+                                  widget.option_desc[i],
+                                  style: const TextStyle(
+                                    fontSize: 18,
+                                    color: Colors.white,
+                                  ),
                                 ),
                               ),
                             ),
@@ -182,8 +218,8 @@ class BetCard extends StatelessWidget {
                                 borderRadius: BorderRadius.circular(5.0),
                               ),
                               child: Text(
-                                double.parse(betting_odds[i]).toStringAsFixed(1),
-                                style: TextStyle(fontSize: textSize / 1.5, color: Colors.blue[900]),
+                                double.parse(widget.betting_odds[i]).toStringAsFixed(1),
+                                style: TextStyle(fontSize: 18, color: Colors.blue[900]),
                               ),
                             ),
                           ],
@@ -192,31 +228,63 @@ class BetCard extends StatelessWidget {
                     const SizedBox(height: 10.0),
                     Text(
                       'Expires in $daysToExpire days',
-                      // Display the days to expire
-                      style: TextStyle(
-                          fontSize: textSize * 0.5, color: Colors.grey),
+                      style: const TextStyle(
+                        fontSize: 12,
+                        color: Colors.grey,
+                      ),
                     ),
                     const SizedBox(height: 10.0),
                     Text(
                       'Fees: ${totalFees.toStringAsFixed(2)}%',
-                      style: TextStyle(
-                          fontSize: textSize * 0.5, color: Colors.black),
+                      style: const TextStyle(
+                        fontSize: 12,
+                        color: Colors.black,
+                      ),
                     ),
                     const SizedBox(height: 10.0),
                     Text(
-                      '$current_total_qus qus',
-                      style: TextStyle(
-                          fontSize: textSize * 0.5,
-                          color: Colors.amber,
-                          fontWeight: FontWeight.bold),
+                      '${widget.current_total_qus} qus',
+                      style: const TextStyle(
+                        fontSize: 12,
+                        color: Colors.amber,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ],
                 ),
               ),
             ),
-          ),
-        );
-      },
+            if (_isOverflowing && !_isAtBottom)
+              Positioned(
+                bottom: 0,
+                left: 0,
+                right: 0,
+                child: IgnorePointer(
+                  child: Container(
+                    height: 80,
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [
+                          Colors.white.withOpacity(0.0),
+                          Colors.white,
+                        ],
+                      ),
+                    ),
+                    child: const Center(
+                      child: Icon(
+                        Icons.keyboard_arrow_down,
+                        size: 80,
+                        color: Colors.grey,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+          ],
+        ),
+      ),
     );
   }
 }
