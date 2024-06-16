@@ -196,9 +196,9 @@ class _CreateBetFormState extends State<CreateBetForm> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Create Bet'),
-      ),
+      // appBar: AppBar(
+      //   title: const Text('Create Bet'),
+      // ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Form(
