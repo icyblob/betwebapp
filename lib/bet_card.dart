@@ -61,7 +61,8 @@ class _BetCardState extends State<BetCard> {
   void initState() {
     super.initState();
     WidgetsBinding.instance?.addPostFrameCallback((_) {
-      final contentBox = _contentKey.currentContext?.findRenderObject() as RenderBox?;
+      final contentBox =
+          _contentKey.currentContext?.findRenderObject() as RenderBox?;
       final cardBox = context.findRenderObject() as RenderBox?;
       if (contentBox != null && cardBox != null) {
         setState(() {
@@ -70,7 +71,8 @@ class _BetCardState extends State<BetCard> {
       }
     });
     _scrollController.addListener(() {
-      if (_scrollController.offset >= _scrollController.position.maxScrollExtent) {
+      if (_scrollController.offset >=
+          _scrollController.position.maxScrollExtent) {
         setState(() {
           _isAtBottom = true;
         });
@@ -88,6 +90,35 @@ class _BetCardState extends State<BetCard> {
     super.dispose();
   }
 
+  void _showBetDetailsDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => BetDetailDialog(
+        bet_id: widget.bet_id,
+        no_options: widget.no_options,
+        creator: widget.creator,
+        bet_desc: widget.bet_desc,
+        option_desc: widget.option_desc,
+        max_slot_per_option: widget.max_slot_per_option,
+        amount_per_bet_slot: widget.amount_per_bet_slot,
+        open_date: widget.open_date,
+        close_date: widget.close_date,
+        end_date: widget.end_date,
+        result: widget.result,
+        no_ops: widget.no_ops,
+        oracle_id: widget.oracle_id,
+        oracle_fee: widget.oracle_fee,
+        current_num_selection: widget.current_num_selection,
+        current_total_qus: widget.current_total_qus,
+        remaining_slots: _calculateRemainingSlots(),
+        slot_colors: _calculateSlotColors(),
+        betting_odds: widget.betting_odds,
+        isPastBet: widget.isPastBet,
+        lastUpdateTime: widget.lastUpdateTime,
+      ),
+    );
+  }
+
   int _calculateDaysToExpire() {
     final now = DateTime.now();
     final closeDate = DateFormat('yy-MM-dd').parse(widget.close_date);
@@ -95,12 +126,23 @@ class _BetCardState extends State<BetCard> {
   }
 
   double _calculateTotalFees() {
-    return widget.oracle_fee.map((fee) => fee ?? 0).reduce((a, b) => a + b);
+    if (widget.oracle_fee.isNotEmpty) {
+      return widget.oracle_fee.map((fee) => fee ?? 0).reduce((a, b) => a + b);
+    }
+    return 0;
   }
 
   List<int> _calculateRemainingSlots() {
     List<int> selections = widget.current_num_selection.map((e) => e).toList();
-    return selections.map((selection) => widget.max_slot_per_option - selection).toList();
+    return selections
+        .map((selection) => widget.max_slot_per_option - selection)
+        .toList();
+  }
+
+  List<Color> _calculateSlotColors() {
+    return _calculateRemainingSlots()
+        .map((slots) => _determineColor(slots))
+        .toList();
   }
 
   Color _determineColor(int remainingSlots) {
@@ -119,37 +161,11 @@ class _BetCardState extends State<BetCard> {
     final daysToExpire = _calculateDaysToExpire();
     final totalFees = _calculateTotalFees();
     final remainingSlots = _calculateRemainingSlots();
-    final slotColors = remainingSlots.map((slots) => _determineColor(slots)).toList();
+    final slotColors =
+        remainingSlots.map((slots) => _determineColor(slots)).toList();
 
     return GestureDetector(
-      onTap: () {
-        showDialog(
-          context: context,
-          builder: (context) => BetDetailDialog(
-            bet_id: widget.bet_id,
-            no_options: widget.no_options,
-            creator: widget.creator,
-            bet_desc: widget.bet_desc,
-            option_desc: widget.option_desc,
-            max_slot_per_option: widget.max_slot_per_option,
-            amount_per_bet_slot: widget.amount_per_bet_slot,
-            open_date: widget.open_date,
-            close_date: widget.close_date,
-            end_date: widget.end_date,
-            result: widget.result,
-            no_ops: widget.no_ops,
-            oracle_id: widget.oracle_id,
-            oracle_fee: widget.oracle_fee,
-            current_num_selection: widget.current_num_selection,
-            current_total_qus: widget.current_total_qus,
-            remaining_slots: remainingSlots,
-            slot_colors: slotColors,
-            betting_odds: widget.betting_odds,
-            isPastBet: widget.isPastBet,
-            lastUpdateTime: widget.lastUpdateTime,
-          ),
-        );
-      },
+      onTap: _showBetDetailsDialog,
       child: Card(
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(10.0),
@@ -193,14 +209,15 @@ class _BetCardState extends State<BetCard> {
                             Expanded(
                               child: ElevatedButton(
                                 style: ElevatedButton.styleFrom(
-                                  backgroundColor: widget.isPastBet && widget.result == i
-                                      ? Colors.green
-                                      : Colors.blue[900],
+                                  backgroundColor:
+                                      widget.isPastBet && widget.result == i
+                                          ? Colors.green
+                                          : Colors.blue[900],
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(10.0),
                                   ),
                                 ),
-                                onPressed: () {},
+                                onPressed: _showBetDetailsDialog,
                                 child: Text(
                                   widget.option_desc[i],
                                   style: const TextStyle(
@@ -214,25 +231,29 @@ class _BetCardState extends State<BetCard> {
                               margin: const EdgeInsets.only(left: 10.0),
                               padding: const EdgeInsets.all(5.0),
                               decoration: BoxDecoration(
-                                border: Border.all(color: Colors.blue[900] ?? Colors.blue),
+                                border: Border.all(
+                                    color: Colors.blue[900] ?? Colors.blue),
                                 borderRadius: BorderRadius.circular(5.0),
                               ),
                               child: Text(
-                                double.parse(widget.betting_odds[i]).toStringAsFixed(1),
-                                style: TextStyle(fontSize: 18, color: Colors.blue[900]),
+                                double.parse(widget.betting_odds[i])
+                                    .toStringAsFixed(1),
+                                style: TextStyle(
+                                    fontSize: 18, color: Colors.blue[900]),
                               ),
                             ),
                           ],
                         ),
                       ),
                     const SizedBox(height: 10.0),
-                    Text(
-                      'Expires in $daysToExpire days',
-                      style: const TextStyle(
-                        fontSize: 12,
-                        color: Colors.grey,
+                    if (!widget.isPastBet)
+                      Text(
+                        'Expires in $daysToExpire days',
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: Colors.grey,
+                        ),
                       ),
-                    ),
                     const SizedBox(height: 10.0),
                     Text(
                       'Fees: ${totalFees.toStringAsFixed(2)}%',

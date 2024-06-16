@@ -171,6 +171,10 @@ class BetList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Remove invalid bets
+    bets.removeWhere((b) => b['no_ops'] == 0 || b['no_options'] == 0);
+
+    // Build bet list
     return Padding(
       padding: const EdgeInsets.all(10.0),
       child: GridView.builder(
