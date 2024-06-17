@@ -99,11 +99,11 @@ class _BetDetailDialogState extends State<BetDetailDialog> {
               style: const TextStyle(fontSize: 20.0),
             ),
             Text(
-              'Close date: ${widget.close_date}',
+              'Close date: ${widget.close_date} 23:59 UTC+0',
               style: const TextStyle(fontSize: 20.0),
             ),
             Text(
-              'End date: ${widget.end_date}',
+              'End date: ${widget.end_date} 23:59 UTC+0',
               style: const TextStyle(fontSize: 20.0),
             ),
             Text(
