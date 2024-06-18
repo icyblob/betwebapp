@@ -64,6 +64,12 @@ class _BetDetailDialogState extends State<BetDetailDialog> {
         .map((slot) => widget.max_slot_per_option - slot)
         .toList();
 
+    List<double> percentages = [];
+    if (widget.isPastBet) {
+      var total_bet = current_slot.fold(0, (previous, current) => previous + current);
+      percentages = current_slot.map((element) => (element / total_bet) * 100).toList();
+    }
+
     String lastUpdateText = widget.lastUpdateTime != null
         ? 'Last update: ${DateFormat('yyyy-MM-dd HH:mm:ss').format(widget.lastUpdateTime!)}'
         : '';
@@ -162,7 +168,8 @@ class _BetDetailDialogState extends State<BetDetailDialog> {
                           }
                         },
                         child: Text(
-                          '${widget.option_desc[i]} (${current_slot[i]}/${widget.max_slot_per_option})',
+                          !widget.isPastBet ? '${widget.option_desc[i]} (${current_slot[i]}/${widget.max_slot_per_option})' :
+                          '${widget.option_desc[i]} (${current_slot[i]} | ${percentages[i].toStringAsFixed(1)}%)',
                           style: const TextStyle(
                               fontSize: 18.0, color: Colors.white),
                         ),
