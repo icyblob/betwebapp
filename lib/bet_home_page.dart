@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:math';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -20,8 +21,9 @@ class _BetHomePageState extends State<BetHomePage>
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   List<dynamic> ongoingBets = [];
   List<dynamic> pastBets = [];
-  Timer? _timer;  // Timer for periodic fetch
-  DateTime? lastUpdateTime;  // Store the last update time
+  List<dynamic> nodeInfo = [];
+  Timer? _timer; // Timer for periodic fetch
+  DateTime? lastUpdateTime; // Store the last update time
 
   @override
   void initState() {
@@ -43,11 +45,14 @@ class _BetHomePageState extends State<BetHomePage>
           await http.get(Uri.parse('$DATABASE_SERVER/get_active_bets'));
 
       if (response.statusCode == 200) {
-        final List<dynamic> data = json.decode(response.body);
+        final dynamic data = json.decode(response.body);
+        var bet_data = data['bet_list'];
+
         setState(() {
-          ongoingBets = data.where((bet) => bet['status'] == 1).toList();
-          pastBets = data.where((bet) => bet['status'] == 0).toList();
-          lastUpdateTime = DateTime.now();  // Update the last update time
+          ongoingBets = bet_data.where((bet) => bet['status'] == 1).toList();
+          pastBets = bet_data.where((bet) => bet['status'] == 0).toList();
+          lastUpdateTime = DateTime.now(); // Update the last update time
+          nodeInfo = data['node_info'];
         });
       } else {
         print(
@@ -58,13 +63,14 @@ class _BetHomePageState extends State<BetHomePage>
       print('Error: $e');
       throw Exception('Failed to load bets');
     } finally {
-      _startTimer();  // Start the timer after fetch completes
+      _startTimer(); // Start the timer after fetch completes
     }
   }
 
   void _startTimer() {
-    _timer?.cancel();  // Cancel any existing timer
-    _timer = Timer(const Duration(seconds: 3), _fetchBets);  // Fetch bets every 3 seconds
+    _timer?.cancel(); // Cancel any existing timer
+    _timer = Timer(
+        const Duration(seconds: 3), _fetchBets); // Fetch bets every 3 seconds
   }
 
   @override
@@ -144,8 +150,17 @@ class _BetHomePageState extends State<BetHomePage>
             child: TabBarView(
               controller: _tabController,
               children: [
-                BetList(bets: ongoingBets, isSmallScreen: isSmallScreen, lastUpdateTime: lastUpdateTime),
-                BetList(bets: pastBets, isSmallScreen: isSmallScreen, isPastBet: true, lastUpdateTime: lastUpdateTime),
+                BetList(
+                    bets: ongoingBets,
+                    node_info: nodeInfo,
+                    isSmallScreen: isSmallScreen,
+                    lastUpdateTime: lastUpdateTime),
+                BetList(
+                    bets: pastBets,
+                    node_info: nodeInfo,
+                    isSmallScreen: isSmallScreen,
+                    isPastBet: true,
+                    lastUpdateTime: lastUpdateTime),
                 CreateBetForm(),
               ],
             ),
@@ -158,12 +173,15 @@ class _BetHomePageState extends State<BetHomePage>
 
 class BetList extends StatelessWidget {
   final List<dynamic> bets;
+  final List<dynamic> node_info;
   final bool isSmallScreen;
   final bool isPastBet;
   final DateTime? lastUpdateTime;
 
-  BetList({super.key,
+  BetList({
+    super.key,
     required this.bets,
+    required this.node_info,
     required this.isSmallScreen,
     this.isPastBet = false,
     this.lastUpdateTime,
@@ -188,6 +206,13 @@ class BetList extends StatelessWidget {
         itemCount: bets.length,
         itemBuilder: (context, index) {
           final bet = bets[index];
+
+          final dynamic nodeInfo = node_info[0];
+          int feePerSlotPerDay = nodeInfo['fee_per_slot_per_day'];
+          int minAmountPerSlot = nodeInfo['min_amount_per_slot'];
+          double gameOperatorFee = nodeInfo['game_operator_fee'];
+          double shareholdersFee = nodeInfo['shareholders_fee'];
+          double burnFee = nodeInfo['burn_fee'];
 
           if (kDebugMode) {
             print(bet);
@@ -236,6 +261,11 @@ class BetList extends StatelessWidget {
             betting_odds: List<String>.from(json.decode(bet['betting_odds'])),
             isPastBet: isPastBet,
             lastUpdateTime: lastUpdateTime,
+            feePerSlotPerDay: feePerSlotPerDay,
+            minAmountPerSlot: minAmountPerSlot,
+            gameOperatorFee: gameOperatorFee,
+            shareholdersFee: shareholdersFee,
+            burnFee: burnFee,
           );
         },
       ),

@@ -26,6 +26,13 @@ class BetDetailDialog extends StatefulWidget {
   final bool isPastBet;
   final DateTime? lastUpdateTime;
 
+  // final List<dynamic> nodeInfo;
+  final int feePerSlotPerDay;
+  final int minAmountPerSlot;
+  final double gameOperatorFee;
+  final double shareholdersFee;
+  final double burnFee;
+
   BetDetailDialog({
     super.key,
     required this.bet_id,
@@ -49,6 +56,11 @@ class BetDetailDialog extends StatefulWidget {
     required this.betting_odds,
     this.isPastBet = false,
     this.lastUpdateTime,
+    required this.feePerSlotPerDay,
+    required this.minAmountPerSlot,
+    required this.gameOperatorFee,
+    required this.shareholdersFee,
+    required this.burnFee,
   });
 
   @override
@@ -66,8 +78,10 @@ class _BetDetailDialogState extends State<BetDetailDialog> {
 
     List<double> percentages = [];
     if (widget.isPastBet) {
-      var total_bet = current_slot.fold(0, (previous, current) => previous + current);
-      percentages = current_slot.map((element) => (element / total_bet) * 100).toList();
+      var total_bet =
+          current_slot.fold(0, (previous, current) => previous + current);
+      percentages =
+          current_slot.map((element) => (element / total_bet) * 100).toList();
     }
 
     String lastUpdateText = widget.lastUpdateTime != null
@@ -84,6 +98,43 @@ class _BetDetailDialogState extends State<BetDetailDialog> {
       content: SingleChildScrollView(
         child: ListBody(
           children: <Widget>[
+            const Text(
+              'Node basic info',
+              style: const TextStyle(fontSize: 21.5, color: Colors.pinkAccent, fontWeight: FontWeight.bold),
+            ),
+            Text(
+              'Fee per slot per day: ${widget.feePerSlotPerDay} qu',
+              style: const TextStyle(fontSize: 20.0),
+            ),
+            Text(
+              'Min amount per bet slot: ${widget.minAmountPerSlot} qu',
+              style: const TextStyle(fontSize: 20.0),
+            ),
+            Text(
+              'Game operator fees: ${widget.gameOperatorFee.toStringAsFixed(1)} %',
+              style: const TextStyle(fontSize: 20.0),
+            ),
+            Text(
+              'Shareholders fee: ${widget.shareholdersFee.toStringAsFixed(1)} %',
+              style: const TextStyle(fontSize: 20.0),
+            ),
+            Text(
+              'Burn fee: ${widget.burnFee.toStringAsFixed(1)} %',
+              style: const TextStyle(fontSize: 20.0),
+            ),
+            const Text.rich(
+              TextSpan(
+                children: [
+                  TextSpan(
+                      text: '\n───────────────────\n',
+                      style: TextStyle(color: Colors.grey)),
+                ],
+              ),
+            ),
+            const Text(
+              'Bet details',
+              style: const TextStyle(fontSize: 21.5, color: Colors.pinkAccent, fontWeight: FontWeight.bold),
+            ),
             Text(
               'Bet ID: ${widget.bet_id}',
               style: const TextStyle(fontSize: 20.0),
@@ -118,6 +169,11 @@ class _BetDetailDialogState extends State<BetDetailDialog> {
             ),
             Text(
               'Oracle Provider fees (%): ${widget.oracle_fee}',
+              style: const TextStyle(fontSize: 20.0),
+            ),
+            Text(
+              'Total fees (%): ${widget.oracle_fee.fold(0.0, (previousValue, element) => previousValue + element)
+                  + widget.gameOperatorFee + widget.shareholdersFee + widget.burnFee}',
               style: const TextStyle(fontSize: 20.0),
             ),
             Text(
@@ -168,8 +224,9 @@ class _BetDetailDialogState extends State<BetDetailDialog> {
                           }
                         },
                         child: Text(
-                          !widget.isPastBet ? '${widget.option_desc[i]} (${current_slot[i]}/${widget.max_slot_per_option})' :
-                          '${widget.option_desc[i]} (${current_slot[i]} | ${percentages[i].toStringAsFixed(1)}%)',
+                          !widget.isPastBet
+                              ? '${widget.option_desc[i]} (${current_slot[i]}/${widget.max_slot_per_option})'
+                              : '${widget.option_desc[i]} (${current_slot[i]} | ${percentages[i].toStringAsFixed(1)}%)',
                           style: const TextStyle(
                               fontSize: 18.0, color: Colors.white),
                         ),

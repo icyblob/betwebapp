@@ -23,6 +23,11 @@ class BetCard extends StatefulWidget {
   final List<String> betting_odds; // betting odds
   final bool isPastBet;
   final DateTime? lastUpdateTime;
+  final int feePerSlotPerDay;
+  final int minAmountPerSlot;
+  final double gameOperatorFee;
+  final double shareholdersFee;
+  final double burnFee;
 
   BetCard({
     super.key,
@@ -45,6 +50,11 @@ class BetCard extends StatefulWidget {
     required this.betting_odds,
     this.isPastBet = false,
     this.lastUpdateTime,
+    required this.feePerSlotPerDay,
+    required this.minAmountPerSlot,
+    required this.gameOperatorFee,
+    required this.shareholdersFee,
+    required this.burnFee,
   });
 
   @override
@@ -91,6 +101,7 @@ class _BetCardState extends State<BetCard> {
   }
 
   void _showBetDetailsDialog() {
+
     showDialog(
       context: context,
       builder: (context) => BetDetailDialog(
@@ -115,6 +126,11 @@ class _BetCardState extends State<BetCard> {
         betting_odds: widget.betting_odds,
         isPastBet: widget.isPastBet,
         lastUpdateTime: widget.lastUpdateTime,
+        feePerSlotPerDay: widget.feePerSlotPerDay,
+        minAmountPerSlot: widget.minAmountPerSlot,
+        gameOperatorFee: widget.gameOperatorFee,
+        shareholdersFee: widget.shareholdersFee,
+        burnFee: widget.burnFee,
       ),
     );
   }
@@ -127,7 +143,8 @@ class _BetCardState extends State<BetCard> {
 
   double _calculateTotalFees() {
     if (widget.oracle_fee.isNotEmpty) {
-      return widget.oracle_fee.map((fee) => fee ?? 0).reduce((a, b) => a + b);
+      double sum_oracle_fee =  widget.oracle_fee.map((fee) => fee ?? 0).reduce((a, b) => a + b);
+      return sum_oracle_fee + widget.gameOperatorFee + widget.shareholdersFee + widget.burnFee;
     }
     return 0;
   }
